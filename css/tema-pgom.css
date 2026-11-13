@@ -1,0 +1,43 @@
+/* Identidad de PGOM compartida por acceso, gestión y páginas públicas.
+   Mantiene las librerías originales y adapta los componentes de Bootstrap. */
+:root {
+    --bs-primary: #003b17;
+    --bs-primary-rgb: 0, 59, 23;
+    --bs-primary-text-emphasis: #00230e;
+    --bs-primary-bg-subtle: #edf5f0;
+    --bs-primary-border-subtle: #c1dacb;
+    --bs-link-color: #003b17;
+    --bs-link-color-rgb: 0, 59, 23;
+    --bs-link-hover-color: #002b11;
+    --bs-link-hover-color-rgb: 0, 43, 17;
+}
+.btn-primary, .btn-outline-primary {
+    --bs-btn-color: #fff;
+    --bs-btn-bg: #003b17;
+    --bs-btn-border-color: #003b17;
+    --bs-btn-hover-color: #fff;
+    --bs-btn-hover-bg: #002b11;
+    --bs-btn-hover-border-color: #002b11;
+    --bs-btn-active-color: #fff;
+    --bs-btn-active-bg: #00230e;
+    --bs-btn-active-border-color: #00230e;
+    --bs-btn-disabled-bg: #003b17;
+    --bs-btn-disabled-border-color: #003b17;
+    --bs-btn-focus-shadow-rgb: 0, 59, 23;
+}
+.btn-outline-primary {
+    --bs-btn-color: #003b17;
+    --bs-btn-bg: transparent;
+    --bs-btn-disabled-color: #003b17;
+    --bs-btn-disabled-bg: transparent;
+}
+.form-control:focus, .form-select:focus {
+    border-color: #74a78b;
+    box-shadow: 0 0 0 .25rem rgba(0, 59, 23, .18);
+}
+.form-check-input:checked { background-color: #003b17; border-color: #003b17; }
+.form-check-input:focus { border-color: #74a78b; box-shadow: 0 0 0 .25rem rgba(0, 59, 23, .18); }
+.dropdown-menu { --bs-dropdown-link-active-bg: #003b17; }
+.nav-pills { --bs-nav-pills-link-active-bg: #003b17; }
+.pagination { --bs-pagination-active-bg: #003b17; --bs-pagination-active-border-color: #003b17; --bs-pagination-color: #003b17; }
+.accordion { --bs-accordion-active-color: #00230e; --bs-accordion-active-bg: #edf5f0; --bs-accordion-btn-focus-box-shadow: 0 0 0 .25rem rgba(0, 59, 23, .18); }

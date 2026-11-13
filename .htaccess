@@ -1,0 +1,11 @@
+RewriteEngine On
+RewriteBase /pbom/
+
+# Si la URL solicita municipio.php, redirígelo internamente al archivo real en /php/
+RewriteRule ^municipio\.php$ php/municipio/municipio.php [L,QSA]
+# Límite de subida para documentos PBOM
+# En XAMPP/Apache con mod_php permite subir PDFs de hasta 64 MB.
+php_value upload_max_filesize 64M
+php_value post_max_size 70M
+php_value max_execution_time 300
+php_value max_input_time 300

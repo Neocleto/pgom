@@ -1,0 +1,29 @@
+/* Los iconos de las guías conservan sus dibujos y el verde corporativo.
+   Esta hoja se comparte entre el portal y el configurador. */
+.bi.bi-pgom-fases::before,
+.bi.bi-pgom-encuesta-infantil::before,
+.bi.bi-pgom-encuesta-participacion::before,
+.bi.bi-pgom-manos::before,
+.bi.bi-pgom-documentos::before,
+.bi.bi-pgom-noticias::before,
+.bi.bi-pgom-buzon::before {
+    content: "";
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+    vertical-align: -.125em;
+    background: var(--pgom-icono-original) center / contain no-repeat;
+}
+.bi.bi-pgom-manos { --pgom-icono-original: url("../images/iconos/participacion.png"); }
+.bi.bi-pgom-documentos { --pgom-icono-original: url("../images/iconos/documentos.svg"); }
+.bi.bi-pgom-noticias { --pgom-icono-original: url("../images/iconos/noticias.png"); }
+.bi.bi-pgom-buzon { --pgom-icono-original: url("../images/iconos/original-buzon.svg"); }
+.bi.bi-pgom-fases { --pgom-icono-original: url("../images/iconos/fases-guia.svg"); }
+.bi.bi-pgom-encuesta-infantil { --pgom-icono-original: url("../images/iconos/encuesta-infantil.png"); }
+.bi.bi-pgom-encuesta-participacion { --pgom-icono-original: url("../images/iconos/encuesta-participacion.png"); }
+
+/* El filtro conserva el blanco y lleva los trazos raster a verde. */
+.bi.bi-pgom-manos::before,
+.bi.bi-pgom-noticias::before { filter: sepia(1) saturate(1.8) hue-rotate(83deg); }
+.bi.bi-pgom-encuesta-infantil::before,
+.bi.bi-pgom-encuesta-participacion::before { filter: grayscale(1) sepia(1) saturate(2.2) hue-rotate(83deg); }

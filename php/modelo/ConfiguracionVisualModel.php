@@ -98,7 +98,7 @@ class ConfiguracionVisualModel
             $configuracion['contenido_portal'] ?? []
         );
 
-        return $configuracion;
+        return normalizarIconosDatosPortal($configuracion);
     }
 
     /**
@@ -230,7 +230,7 @@ class ConfiguracionVisualModel
                 return $this->normalizarBooleano($acceso['visible'] ?? true);
             }));
         }
-        return $accesos;
+        return normalizarIconosDatosPortal($accesos);
     }
 
     /**
@@ -581,16 +581,7 @@ class ConfiguracionVisualModel
 
     private function normalizarIcono($icono)
     {
-        $icono = trim((string)$icono);
-
-        // El valor vacío es válido: permite mostrar el bloque sin icono.
-        if ($icono === '') {
-            return '';
-        }
-
-        return preg_match('/^[a-zA-Z0-9-]+$/', $icono)
-            ? $icono
-            : 'link-45deg';
+        return normalizarIconoPortal($icono);
     }
 
     /**

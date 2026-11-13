@@ -3,6 +3,7 @@
 // No consultan ni modifican datos. Consumidor: municipio_template.php.
 
 require_once __DIR__ . '/html_portal.php';
+require_once __DIR__ . '/valores_portal.php';
 
 /**
  * Une dos arrays conservando los valores por defecto que no se hayan editado.
@@ -264,6 +265,6 @@ function htmlEnriquecidoPortal($texto)
 /** Devuelve el icono guardado; una cadena vacía permite retirarlo. */
 function obtenerIconoBotonParticipacionPortal($boton)
 {
-    return array_key_exists('icono', $boton) ? trim((string)$boton['icono']) : 'file-earmark-arrow-down';
+    return array_key_exists('icono', $boton) ? normalizarIconoPortal($boton['icono']) : 'file-earmark-arrow-down';
 }
 

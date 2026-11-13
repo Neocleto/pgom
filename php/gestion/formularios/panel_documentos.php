@@ -41,17 +41,17 @@ if ($cod_mun !== '') {
 
     <!-- Boostrap -->
     <link rel="stylesheet" href="lib/bootstrap/css/bootstrap@5.3.0.min.css">
-    <link rel="stylesheet" href="css/tema-pgom.css">
+    <link rel="stylesheet" href="css/tema-pgom.css?v=pgom-estados-20261113-4">
     <link rel="stylesheet" href="lib/bootstrap/css/bootstrap-icons.css">
 
     <!-- bootstrap-select para Bootstrap 5 -->
     <link rel="stylesheet" href="lib/bootstrap/css/bootstrap-select.min.css">
 
-    <link rel="stylesheet" href="css/index.css">
-    <link rel="stylesheet" href="css/panel.css">
-    <link rel="stylesheet" href="css/tabla-municipio.css">
-    <link rel="stylesheet" href="css/wizard.css">
-    <link rel="stylesheet" href="css/tour.css">
+    <link rel="stylesheet" href="css/index.css?v=pgom-pie-gris-20261113-3">
+    <link rel="stylesheet" href="css/panel.css?v=pgom-estados-20261113-4">
+    <link rel="stylesheet" href="css/tabla-municipio.css?v=pgom-estados-20261113-4">
+    <link rel="stylesheet" href="css/wizard.css?v=pgom-estados-20261113-4">
+    <link rel="stylesheet" href="css/tour.css?v=pgom-verde-20261113-2">
 </head>
 
 <body class="page-panel-documentos">
@@ -286,7 +286,7 @@ if ($cod_mun !== '') {
     <script src="lib/Sortable.min.js"></script>
 
     <!-- Scripts del proyecto -->
-    <script src="js/login/verificacion_sesion.js"></script>
+    <script src="js/login/verificacion_sesion.js?v=pgom-verde-20261113-2"></script>
     <script src="js/gestion/utilidadesGestion.js?v=<?= (int)@filemtime(dirname(__DIR__, 3) . '/js/gestion/utilidadesGestion.js') ?>"></script>
     <script src="js/gestion/documentosWizard.js?v=<?= (int)@filemtime(dirname(__DIR__, 3) . '/js/gestion/documentosWizard.js') ?>"></script>
 

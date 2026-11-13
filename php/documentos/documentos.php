@@ -26,6 +26,7 @@ $datos = $controlador->mostrarDocumentos($cod_mun, $esPreview, $usuarioId, $rol,
 $municipio         = $datos['municipio'];
 $fasesMenu         = $datos['fasesMenu'];
 $documentosPorFase = $datos['documentosPorFase'];
+$estadosFases      = $datos['estadosFases'];
 $faseActualNum     = $datos['faseActualNum'] ?? 0;
 $configuracionVisual = $datos['configuracionVisual'] ?? [];
 

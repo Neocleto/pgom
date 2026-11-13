@@ -1,4 +1,4 @@
-@import url("pie-institucional.css?v=1.31");
+@import url("pie-institucional.css?v=pgom-pie-gris-20261113-3");
 /* ============================================================================
    ACCESO PGOM
    Una única hoja para estructura, identidad, listado y adaptación a pantalla.
@@ -39,7 +39,7 @@ body.pgom-access-page .text-primary { color: var(--pgom-corporativo) !important;
 .access-user-menu:hover, .access-user-menu:focus, .access-user-menu.show { color: var(--pgom-corporativo); background: #f1faf6; }
 .access-user-avatar { width: 30px; height: 30px; display: inline-grid; place-items: center; border-radius: 50%; color: white; background: var(--pgom-corporativo); }
 .access-user-name { max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.access-user-dropdown { min-width: 260px; padding: 8px; border: 1px solid var(--pgom-borde); border-radius: 11px; box-shadow: 0 12px 30px #1a412f24; }
+.access-user-dropdown { min-width: 260px; padding: 8px; border: 1px solid var(--pgom-borde); border-radius: 11px; box-shadow: 0 12px 30px #003b1724; }
 .access-user-dropdown .dropdown-item { padding: 9px 11px; border-radius: 7px; font-weight: 400; }
 .access-user-dropdown .dropdown-item:hover { background: #f2fbf7; }
 
@@ -179,7 +179,7 @@ body.pgom-access-page .text-primary { color: var(--pgom-corporativo) !important;
 .access-page-btn:disabled { opacity: .45; }
 
 /* 4. Pie institucional. El fondo liso compartido está en pie-institucional.css. */
-.access-footer { color: white; background: var(--pgom-corporativo); }
+.access-footer { color: white; background: var(--pgom-footer-bg, #4d4d4d); }
 .access-footer__inner { min-height: 82px; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 28px; padding-block: 15px; }
 .access-footer__inner > span { font-size: .9rem; }
 .access-footer nav { display: flex; flex-wrap: wrap; gap: 24px; }

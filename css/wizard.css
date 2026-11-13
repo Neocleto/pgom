@@ -37,13 +37,13 @@
   height: 64px;
   border-radius: 50%;
   background: #fff;
-  border: 2px solid #ccc;
+  border: 2px solid #c4cbd0;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 26px;
   margin: 0 auto 10px;
-  color: #ccc;
+  color: #98a0a7;
   position: relative;
   z-index: 1;
 }
@@ -51,27 +51,49 @@
 /* Etiqueta del paso */
 .wizard-step .label {
   font-size: 0.95rem;
-  color: #ccc;
+  color: #6c757d;
 }
 
 /* Paso activo */
 .wizard-step.active .circle {
-  border-color: #003b1788;
+  background: #f2f8f4;
+  border-color: #003b17;
   color: #003b17;
+  box-shadow: 0 0 0 4px rgba(0, 59, 23, .12);
 }
 
 .wizard-step.active .label {
   color: #003b17;
+  font-weight: 700;
 }
 
 /* Paso completado */
 .wizard-step.complete .circle {
-  border-color: #28a745;
-  color: #28a745;
+  background: #198754;
+  border-color: #198754;
+  color: #ffffff;
+}
+
+/* La marca también distingue el completado sin depender solo del color. */
+.wizard-step.complete .circle::after {
+  content: "✓";
+  position: absolute;
+  right: -4px;
+  bottom: -3px;
+  width: 18px;
+  height: 18px;
+  display: grid;
+  place-items: center;
+  border: 1px solid #198754;
+  border-radius: 50%;
+  background: #ffffff;
+  color: #146c43;
+  font: 700 12px Arial, sans-serif;
 }
 
 .wizard-step.complete .label {
-  color: #28a745;
+  color: #146c43;
+  font-weight: 500;
 }
 
 /* Línea conectora entre pasos (por defecto) */
@@ -88,7 +110,7 @@
 
 /* Línea verde si el paso anterior está completo */
 .wizard-step.complete + .wizard-step::before {
-  background-color: #28a745;
+  background-color: #198754;
 }
 
 /* ==========================================================================
@@ -163,7 +185,7 @@
   }
 
   .wizard-step.complete + .wizard-step::before {
-    background-color: #28a745;
+    background-color: #198754;
   }
 
   /* Eliminar líneas entre filas (ej. fase → documentos) */
@@ -221,8 +243,8 @@
 }
 
 #nextBtn:hover {
-  background-color: #3ba776;
-  border-color: #379d6f;
+  background-color: #003b17;
+  border-color: #003b17;
 }
 
 /* ==========================================================================
@@ -431,16 +453,16 @@
   padding: 0.4rem 0.9rem;
   border-radius: 0.5rem;
   background-color: transparent;
-  color: #3eb27e;
-  border: 1px solid #3eb27e;
+  color: #003b17;
+  border: 1px solid #003b17;
   transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
   cursor: pointer;
 }
 
 .btn-tour:hover {
   background-color: rgba(62, 178, 126, 0.15);
-  color: #3eb27e !important;
-  border-color: #3eb27e !important;
+  color: #003b17 !important;
+  border-color: #003b17 !important;
 }
 
 .btn-preview {
@@ -452,16 +474,21 @@
   padding: 0.4rem 0.9rem;
   border-radius: 0.5rem;
   background-color: transparent;
-  color: #003b17;
-  border: 1px solid #003b17;
+  color: #0b6e99;
+  border: 1px solid #0b6e99;
   transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
   cursor: pointer;
 }
 
 .btn-preview:hover {
-  background-color: rgba(74, 192, 139, 0.08);
-  color: #003b17 !important;
-  border-color: #003b17 !important;
+  background-color: #0b6e99;
+  color: #ffffff;
+  border-color: #0b6e99;
+}
+
+.btn-preview:focus-visible {
+  outline: 3px solid rgba(11, 110, 153, .25);
+  outline-offset: 2px;
 }
 
 .btn-tour,
@@ -1093,7 +1120,7 @@ body.modal-open {
 }
 
 .portal-design-launcher__icon--participacion {
-    color: #267249;
+    color: #003b17;
     background: #eaf5ee;
 }
 
@@ -1114,7 +1141,7 @@ body.modal-open {
 
 .portal-design-launcher__copy h6 {
     margin: 0 0 3px;
-    color: #246749;
+    color: #003b17;
     font-size: 1rem;
     font-weight: 600;
 }

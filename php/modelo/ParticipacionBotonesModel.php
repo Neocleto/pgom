@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../includes/archivos_municipio.php';
+require_once __DIR__ . '/../includes/valores_portal.php';
 // ============================================================================
 // MODELO: BOTONES DE PARTICIPACION
 //
@@ -167,7 +168,7 @@ class ParticipacionBotonesModel
         $stmt = $this->conn->prepare($sql);
         $stmt->execute([':cod_mun' => $codMun]);
 
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return normalizarIconosDatosPortal($stmt->fetchAll(PDO::FETCH_ASSOC));
     }
 
     /**
@@ -310,17 +311,7 @@ class ParticipacionBotonesModel
 
     private function normalizarIcono($icono)
     {
-        $icono = trim((string)$icono);
-
-        if ($icono === '') {
-            return '';
-        }
-
-        if (preg_match('/^[a-zA-Z0-9-]+$/', $icono)) {
-            return $icono;
-        }
-
-        return 'file-earmark-arrow-down';
+        return normalizarIconoPortal($icono);
     }
 
     private function normalizarColor($color)

@@ -46,9 +46,9 @@ function escaparAtributo($valor)
 
     <link rel="icon" href="images/favicon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="lib/bootstrap/css/bootstrap@5.3.0.min.css">
-    <link rel="stylesheet" href="css/tema-pgom.css">
+    <link rel="stylesheet" href="css/tema-pgom.css?v=pgom-estados-20261113-4">
     <link rel="stylesheet" href="lib/bootstrap/css/bootstrap-icons.css">
-    <link rel="stylesheet" href="css/formulario-publico.css">
+    <link rel="stylesheet" href="css/formulario-publico.css?v=pgom-pie-gris-20261113-3">
 </head>
 <body
     class="form-public-page form-public-loading"
@@ -278,6 +278,6 @@ function escaparAtributo($valor)
         };
     </script>
     <script src="lib/sweetalert2@11.js"></script>
-    <script src="js/municipios/formularioPublico.js"></script>
+    <script src="js/municipios/formularioPublico.js?v=pgom-verde-20261113-2"></script>
 </body>
 </html>

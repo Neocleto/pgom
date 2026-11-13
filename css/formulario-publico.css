@@ -1,4 +1,4 @@
-@import url("iconos-portal.css?v=limpieza-20261111");
+@import url("iconos-portal.css?v=pgom-iconos-20261113-2");
 /* ========================================================================== */
 /* FORMULARIO PÚBLICO PGOM                                                    */
 /* ========================================================================== */
@@ -231,7 +231,7 @@ body.form-public-page {
 
 .form-public-section h2 {
     margin: 0;
-    color: #27664a;
+    color: #003b17;
     font-size: 1.35rem;
     font-weight: 600;
 }
@@ -402,7 +402,7 @@ body.form-public-page {
 
 .form-public-footer {
     color: #ffffff;
-    background: #003b17;
+    background: var(--pgom-footer-bg, #4d4d4d);
 }
 
 .form-public-footer__inner {

@@ -10,7 +10,7 @@ require_once __DIR__ . '/valores_portal.php';
 /** El icono guardado coincide con el que muestra el selector del configurador. */
 function obtenerIconoAccesoPortal($acceso)
 {
-    return trim((string)($acceso['icono'] ?? ''));
+    return normalizarIconoPortal($acceso['icono'] ?? '');
 }
 
 /** Devuelve el índice recibido; solo una ausencia de configuración usa el inicial. */

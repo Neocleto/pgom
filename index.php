@@ -13,9 +13,9 @@ if (session_status() === PHP_SESSION_NONE) {
 
     <link rel="icon" href="images/favicon.svg" type="image/svg+xml">
     <link href="lib/bootstrap/css/bootstrap@5.3.0.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="css/tema-pgom.css">
+    <link rel="stylesheet" href="css/tema-pgom.css?v=pgom-estados-20261113-4">
     <link href="lib/bootstrap/css/bootstrap-icons.css" rel="stylesheet">
-    <link rel="stylesheet" href="css/login.css">
+    <link rel="stylesheet" href="css/login.css?v=pgom-verde-20261113-2">
     <link rel="stylesheet" href="css/acceso-moderno.css?v=<?= (int)@filemtime(__DIR__ . '/css/acceso-moderno.css') ?>">
 </head>
 <body class="pgom-access-page">
@@ -25,7 +25,7 @@ if (session_status() === PHP_SESSION_NONE) {
         <!-- Presentación de la plataforma. -->
         <section class="access-hero-modern">
             <div class="access-hero-modern__visual" aria-hidden="true">
-                <img src="images/diseno/inicio_fotografia_planos.png" alt="" fetchpriority="high">
+                <img src="images/diseno/portada_pgom.png" alt="" fetchpriority="high">
             </div>
             <div class="access-shell access-hero-modern__inner">
                 <div class="access-hero-modern__copy">
@@ -127,7 +127,7 @@ if (session_status() === PHP_SESSION_NONE) {
     <script src="lib/bootstrap.bundle.min.js"></script>
     <script src="lib/sweetalert2@11.js"></script>
     <script src="js/index.js?v=<?= (int)@filemtime(__DIR__ . '/js/index.js') ?>"></script>
-    <script src="js/login/login.js"></script>
-    <script src="js/login/verificacion_sesion.js"></script>
+    <script src="js/login/login.js?v=pgom-verde-20261113-2"></script>
+    <script src="js/login/verificacion_sesion.js?v=pgom-verde-20261113-2"></script>
 </body>
 </html>

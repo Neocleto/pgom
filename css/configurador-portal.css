@@ -1,4 +1,4 @@
-@import url("iconos-portal.css?v=limpieza-20261111");
+@import url("iconos-portal.css?v=pgom-iconos-20261113-2");
 /* ========================================================================== */
 /* CONFIGURADOR VISUAL DEL PORTAL PGOM                                        */
 /*                                                                            */
@@ -13,9 +13,9 @@
     --pgom-corporativo: #003b17;
     --pgom-fondo: #eef9f4;
     --pgom-borde: #d8ede4;
-    --pgom-texto: #264a3a;
+    --pgom-texto: #003b17;
     --pgom-texto-suave: #6c8e7f;
-    --pgom-verde: #198754;
+    --pgom-verde: #003b17;
 }
 
 * {
@@ -158,7 +158,7 @@ textarea {
 }
 
 .portal-builder-save-state i {
-    color: #50d890;
+    color: #003b17;
     font-size: 0.55rem;
 }
 
@@ -219,7 +219,7 @@ textarea {
 
 .portal-builder-sidebar__title {
     padding: 16px 14px 10px;
-    color: #1b402f;
+    color: #003b17;
     font-size: 0.87rem;
     font-weight: 600;
 }
@@ -258,7 +258,7 @@ textarea {
 }
 
 .portal-builder-menu__item.is-active {
-    color: #256b4b;
+    color: #003b17;
     background: #f2faf6;
     border-color: #cbedde;
 }
@@ -343,7 +343,7 @@ textarea {
 .portal-builder-properties__heading h2,
 .portal-builder-preview__heading h2 {
     margin: 0 0 3px;
-    color: #1d3f30;
+    color: #003b17;
     font-size: 0.98rem;
     font-weight: 600;
 }
@@ -437,7 +437,7 @@ textarea {
     justify-content: space-between;
     gap: 14px;
     padding: 12px 14px;
-    color: #296c4e;
+    color: #003b17;
     cursor: pointer;
     list-style: none;
 }
@@ -480,7 +480,7 @@ textarea {
 .portal-color-trigger > span { width: 21px; height: 26px; border-radius: 4px; background: var(--chosen-color); border: 1px solid #00000012; }
 .portal-color-trigger > i { font-size: .55rem; }
 .portal-color-trigger[aria-expanded=true] { outline: 2px solid #add2c1; outline-offset: 2px; }
-.portal-color-palette { margin-top: 8px; padding: 12px; border: 1px solid #d8ece3; border-radius: 10px; background: #fff; box-shadow: 0 6px 20px #21533d0c; }
+.portal-color-palette { margin-top: 8px; padding: 12px; border: 1px solid #d8ece3; border-radius: 10px; background: #fff; box-shadow: 0 6px 20px #003b170c; }
 .portal-color-palette[hidden] { display: none; }
 .portal-color-palette__group + .portal-color-palette__group { margin-top: 12px; }
 .portal-color-palette__group > span { display: block; margin-bottom: 7px; color: #648777; font-size: .74rem; }
@@ -488,7 +488,7 @@ textarea {
 .portal-color-swatch { display: grid; place-items: center; width: 27px; height: 27px; padding: 0; border: 1px solid #00000018; border-radius: 6px; background: var(--swatch-color); color: white; }
 .portal-color-swatch i { visibility: hidden; text-shadow: 0 1px 2px #000; }
 .portal-color-swatch[aria-pressed=true] i { visibility: visible; }
-.portal-color-swatch:focus-visible { outline: 2px solid #264738; outline-offset: 3px; }
+.portal-color-swatch:focus-visible { outline: 2px solid #003b17; outline-offset: 3px; }
 .portal-color-custom { display: flex; align-items: center; gap: 7px; margin-top: 13px; padding: 7px 0 0; border: 0; border-top: 1px solid #e8f1ed; width: 100%; color: #345a49; background: white; font-size: .78rem; }
 /* El editor forma parte del listado, justo después de su fila. */
 [data-resource-list] > .portal-content-editor { margin: -3px 0 8px; border-color: #c8e7d9; }
@@ -709,7 +709,7 @@ textarea {
 .portal-form-builder-empty i {
     display: block;
     margin-bottom: 8px;
-    color: #3fb27e;
+    color: #003b17;
     font-size: 1.8rem;
 }
 
@@ -882,7 +882,7 @@ textarea {
 }
 
 .portal-builder-preview-tabs button.is-active {
-    color: #2f865f;
+    color: #003b17;
     background: #ffffff;
     box-shadow: 0 2px 7px rgba(28, 80, 57, 0.10);
 }
@@ -940,7 +940,7 @@ textarea {
 }
 
 .portal-content-row__copy strong {
-    color: #2b5240;
+    color: #003b17;
     font-size: 0.84rem;
     font-weight: 560;
 }
@@ -975,7 +975,7 @@ textarea {
 .portal-content-row__actions button:hover,
 .portal-content-row__actions a:hover,
 .portal-content-editor__heading button:hover {
-    color: #2f865f;
+    color: #003b17;
     background: #f2faf6;
     border-color: #bfe9d6;
 }
@@ -1012,7 +1012,7 @@ textarea {
 }
 
 .portal-content-editor__heading strong {
-    color: #2b503f;
+    color: #003b17;
     font-size: 0.87rem;
     font-weight: 600;
 }
@@ -1054,7 +1054,7 @@ textarea {
     place-items: center;
     width: 46px;
     height: 46px;
-    color: #267249;
+    color: #003b17;
     background: #eaf4ee;
     border-radius: 10px;
 }
@@ -1089,7 +1089,7 @@ textarea {
 
 .portal-form-preview-page {
     min-height: 100%;
-    color: #274d3c;
+    color: #003b17;
     background: #f3f9f6;
     font-family: Arial, sans-serif;
 }
@@ -1156,7 +1156,7 @@ textarea {
 
 .portal-form-preview-intro h1 {
     margin: 5px 0 8px;
-    color: #264d3b;
+    color: #003b17;
     font-size: clamp(1.35rem, 2.2vw, 1.85rem);
     font-weight: 620;
     line-height: 1.17;
@@ -1379,7 +1379,7 @@ textarea {
 
 .portal-form-preview-only-pdf > i,
 .portal-form-preview-empty > i {
-    color: var(--form-preview-color, #267249);
+    color: var(--form-preview-color, #003b17);
     font-size: 2rem;
 }
 
@@ -1504,7 +1504,7 @@ textarea {
 }
 
 .portal-resource-preview strong {
-    color: color-mix(in srgb, var(--item-color) 70%, #284f3d);
+    color: color-mix(in srgb, var(--item-color) 70%, #003b17);
     font-weight: 600;
 }
 
@@ -1806,12 +1806,12 @@ textarea {
 
 .portal-layout-choices input:checked + span {
     background: #f5fcf9;
-    border-color: #43bd86;
+    border-color: #003b17;
     box-shadow: 0 0 0 2px rgba(67, 189, 134, .12);
 }
 
 .portal-layout-choices i {
-    color: #39a172;
+    color: #003b17;
     font-size: 1.35rem;
 }
 
@@ -1880,7 +1880,7 @@ body.portal-builder-page {
     min-height: 40px;
     padding: 4px 9px 4px 4px;
     list-style: none;
-    color: #246849;
+    color: #003b17;
     background: #fff;
     border: 1px solid #cbebdd;
     border-radius: 8px;
@@ -1905,7 +1905,7 @@ body.portal-builder-page {
     background: #fff;
     border: 1px solid #cbebdd;
     border-radius: 8px;
-    box-shadow: 0 5px 16px #24644710;
+    box-shadow: 0 5px 16px #003b1710;
 }
 .portal-builder-page .portal-icon-picker__list {
     display: grid;
@@ -1920,7 +1920,7 @@ body.portal-builder-page {
     align-items: center;
     gap: 8px;
     padding: 7px 8px;
-    color: #31624c;
+    color: #003b17;
     text-align: left;
     font: inherit;
     background: transparent;

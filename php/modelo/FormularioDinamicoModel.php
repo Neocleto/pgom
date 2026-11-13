@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../includes/valores_portal.php';
 
 // ============================================================================
 // MODELO DE FORMULARIOS DINÁMICOS
@@ -46,7 +47,7 @@ class FormularioDinamicoModel
             ':cod_mun' => $codMun
         ]);
 
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return normalizarIconosDatosPortal($stmt->fetchAll(PDO::FETCH_ASSOC));
     }
 
     /**
@@ -78,7 +79,7 @@ class FormularioDinamicoModel
 
         $formulario['secciones'] = $this->obtenerSecciones((int)$formulario['id']);
 
-        return $formulario;
+        return normalizarIconosDatosPortal($formulario);
     }
 
     /**
@@ -502,22 +503,10 @@ class FormularioDinamicoModel
      */
     private function normalizarIcono($icono)
     {
-        $icono = trim((string)$icono);
-
-        if ($icono === '') {
-            return '';
-        }
-
-        if (preg_match('/^[a-zA-Z0-9-]+$/', $icono)) {
-            return $icono;
-        }
-
-        return 'clipboard-check';
+        return normalizarIconoPortal($icono);
     }
 
-    /**
-     * Elimina los apartados actuales antes de reconstruir el formulario.
-     */
+    /** Elimina los apartados actuales antes de reconstruir el formulario. */
     private function eliminarSecciones($formularioId)
     {
         $sql = "DELETE FROM pgom.formulario_secciones

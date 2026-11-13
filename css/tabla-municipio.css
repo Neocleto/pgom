@@ -22,7 +22,7 @@
 .table-title {
     display: flex;
     align-items: center;
-    color: #183327;
+    color: #003b17;
     font-size: 1.18rem;
     font-weight: 600;
 }
@@ -146,7 +146,7 @@ table.dataTable tbody tr:hover td {
 }
 
 .municipio-celda {
-    color: #203d30 !important;
+    color: #003b17 !important;
     font-weight: 500 !important;
 }
 
@@ -173,7 +173,7 @@ table.dataTable tbody tr:hover td {
 }
 
 .status-publicado {
-    color: #13703e;
+    color: #003b17;
     background: #e4f5eb;
 }
 
@@ -204,15 +204,15 @@ table.dataTable tbody tr:hover td {
     height: 20px;
     display: grid;
     place-items: center;
-    color: #9db6ab;
-    background: #e2ebe7;
+    color: #667085;
+    background: #e9ecef;
     border-radius: 50%;
     font-size: 0.73rem;
 }
 
 .assistant-progress__step.is-complete {
     color: #ffffff;
-    background: #20a164;
+    background: #198754;
 }
 
 .assistant-progress small {
@@ -268,15 +268,59 @@ table.dataTable tbody tr:hover td {
     font-weight: 500;
 }
 
-.btn-editar {
-    color: #ffffff !important;
-    background: #efa500 !important;
-    border-color: #efa500 !important;
+/* El color describe la acción; la identidad corporativa se mantiene aparte. */
+.acciones-wrap .btn-editar {
+    --accion-color: #a56600;
+    --accion-hover: #855200;
+    --accion-rgb: 165, 102, 0;
 }
 
-.btn-editar:hover {
-    background: #d99100 !important;
-    border-color: #d99100 !important;
+.acciones-wrap .btn-configurar-portal {
+    --accion-color: #475569;
+    --accion-hover: #334155;
+    --accion-rgb: 71, 85, 105;
+}
+
+.acciones-wrap .btn-previsualizar {
+    --accion-color: #0b6e99;
+    --accion-hover: #095878;
+    --accion-rgb: 11, 110, 153;
+}
+
+.acciones-wrap .btn-publicar {
+    --accion-color: #198754;
+    --accion-hover: #146c43;
+    --accion-rgb: 25, 135, 84;
+}
+
+.acciones-wrap .btn-eliminar {
+    --accion-color: #dc3545;
+    --accion-hover: #b02a37;
+    --accion-rgb: 220, 53, 69;
+}
+
+.acciones-wrap .btn-accion {
+    --bs-btn-color: #ffffff;
+    --bs-btn-bg: var(--accion-color);
+    --bs-btn-border-color: var(--accion-color);
+    --bs-btn-hover-color: #ffffff;
+    --bs-btn-hover-bg: var(--accion-hover);
+    --bs-btn-hover-border-color: var(--accion-hover);
+    --bs-btn-active-color: #ffffff;
+    --bs-btn-active-bg: var(--accion-hover);
+    --bs-btn-active-border-color: var(--accion-hover);
+    --bs-btn-focus-shadow-rgb: var(--accion-rgb);
+    --bs-btn-disabled-color: #ffffff;
+    --bs-btn-disabled-bg: var(--accion-color);
+    --bs-btn-disabled-border-color: var(--accion-color);
+}
+
+.acciones-wrap .btn-previsualizar,
+.acciones-wrap .btn-eliminar {
+    --bs-btn-color: var(--accion-color);
+    --bs-btn-bg: transparent;
+    --bs-btn-disabled-color: var(--accion-color);
+    --bs-btn-disabled-bg: transparent;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -304,7 +348,7 @@ table.dataTable tbody tr:hover td {
     display: grid;
     place-items: center;
     padding: 0 10px;
-    color: #567a6a;
+    color: #003b17;
     background: #ffffff;
     border: 1px solid #dfebe6 !important;
     border-radius: 7px !important;
@@ -312,9 +356,25 @@ table.dataTable tbody tr:hover td {
 
 .dataTables_paginate .page-item.active .page-link {
     color: #ffffff;
-    background: #3caa79;
-    border-color: #3caa79 !important;
+    background: #003b17;
+    border-color: #003b17 !important;
     font-weight: 500;
+}
+
+.dataTables_paginate .page-item:not(.active):not(.disabled) .page-link:hover {
+    color: #002b11;
+    background: #edf5f0;
+    border-color: #b9d0c2 !important;
+}
+
+.dataTables_paginate .page-link:focus {
+    box-shadow: 0 0 0 .2rem rgba(0, 59, 23, .18);
+}
+
+.dataTables_paginate .page-item.disabled .page-link {
+    color: #7b887f;
+    background: #f5f7f5;
+    border-color: #e0e6e2 !important;
 }
 
 /* -------------------------------------------------------------------------- */

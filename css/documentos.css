@@ -4,7 +4,7 @@
 
 .portal-documents-page {
     min-height: 100vh;
-    color: #264d3b;
+    color: #003b17;
     background: #f4fbf8;
 }
 
@@ -123,7 +123,7 @@
 }
 
 .documents-municipality strong {
-    color: #235740;
+    color: #003b17;
     overflow: hidden;
     font-size: 1rem;
     font-weight: 650;
@@ -142,7 +142,7 @@
 
 .documents-hero h1 {
     margin: 0;
-    color: #184430;
+    color: #003b17;
     font-size: clamp(2.25rem, 4vw, 4rem);
     font-weight: 650;
     line-height: 1.02;
@@ -190,7 +190,7 @@
 }
 
 .documents-hero__summary strong {
-    color: #1d523a;
+    color: #003b17;
     font-size: 1.45rem;
     font-weight: 650;
     line-height: 1;
@@ -279,7 +279,7 @@
 }
 
 .documents-phases__copy strong {
-    color: #2a5843;
+    color: #003b17;
     font-size: .92rem;
     font-weight: 600;
 }
@@ -297,18 +297,32 @@
     color: #9ab9ab;
 }
 
-.documents-phases__nav .nav-link:hover {
+.documents-phases__nav .nav-link:not(:disabled):hover {
     background: #f4fbf8;
 }
 
 .documents-phases__nav .nav-link.active {
-    color: var(--pgom-documents);
-    background: color-mix(in srgb, var(--pgom-documents) 8%, #fff);
+    color: white;
+    background: var(--pgom-documents);
 }
 
 .documents-phases__nav .nav-link.active .documents-phases__copy strong,
-.documents-phases__nav .nav-link.active > i {
-    color: var(--pgom-documents);
+.documents-phases__nav .nav-link.active .documents-phases__copy small,
+.documents-phases__nav .nav-link.active > i,
+.documents-phases__nav .nav-link.is-completed .documents-phases__copy strong,
+.documents-phases__nav .nav-link.is-completed .documents-phases__copy small,
+.documents-phases__nav .nav-link.is-completed > i {
+    color: white;
+}
+
+.documents-phases__nav .nav-link.is-completed {
+    color: white;
+    background: color-mix(in srgb, var(--pgom-documents) 45%, #8a998e);
+}
+
+.documents-phases__nav .nav-link:disabled {
+    opacity: 1;
+    cursor: default;
 }
 
 .documents-panel {
@@ -327,7 +341,7 @@
 
 .documents-panel__heading h2 {
     margin: 0;
-    color: #20513b;
+    color: #003b17;
     font-size: clamp(1.35rem, 2vw, 1.8rem);
     font-weight: 650;
     line-height: 1.2;
@@ -351,7 +365,7 @@
 }
 
 .documents-status.is-current {
-    color: #17643c;
+    color: #003b17;
     background: #e6f5ec;
 }
 
@@ -405,7 +419,7 @@
 .documents-search .form-control {
     min-height: 42px;
     padding-left: 39px;
-    color: #34614d;
+    color: #003b17;
     background: #ffffff;
     border-color: #d7eae1;
     border-radius: 10px;
@@ -518,7 +532,7 @@
 }
 
 .documents-category__heading h3 {
-    color: #2b5c46;
+    color: #003b17;
     font-size: .98rem;
     font-weight: 650;
 }
@@ -580,7 +594,7 @@ a.document-item:hover {
 }
 
 .document-item__copy strong {
-    color: #35644f;
+    color: #003b17;
     font-size: .87rem;
     font-weight: 600;
     line-height: 1.28;

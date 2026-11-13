@@ -14,7 +14,7 @@ $municipio['escudo'] = obtenerEscudoMunicipio($codMun, $municipio['escudo'] ?? '
     <base href="/pgom/">
 
     <link rel="stylesheet" href="lib/bootstrap/css/bootstrap@5.3.0.min.css">
-    <link rel="stylesheet" href="css/tema-pgom.css">
+    <link rel="stylesheet" href="css/tema-pgom.css?v=pgom-estados-20261113-4">
     <link rel="stylesheet" href="lib/bootstrap/css/bootstrap-icons.css">
     <link rel="stylesheet" href="css/configurador-portal.css?v=<?= (int)@filemtime(dirname(__DIR__, 2) . '/css/configurador-portal.css') ?>">
 </head>

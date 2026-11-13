@@ -23,7 +23,7 @@ body.pgom-panel-page {
   height: 100vh;
   display: flex;
   flex-direction: column;
-  color: #264d3b;
+  color: #003b17;
   background: #f6fbf9;
   font-family: "Roboto Condensed", Arial, sans-serif;
 }
@@ -306,8 +306,8 @@ body.swal2-shown {
   user-select: none;
   pointer-events: none;
 }
-.ayuda-btn-editar { background: #ffc107; color: #11271d; }
-.ayuda-btn-previsualizar { background: #fff; border: 1px solid #003b17; color: #003b17; }
+.ayuda-btn-editar { background: #a56600; color: #fff; }
+.ayuda-btn-previsualizar { background: #fff; border: 1px solid #0b6e99; color: #0b6e99; }
 .ayuda-btn-publicar { background: #198754; color: #fff; }
 .ayuda-btn-eliminar { background: #fff; border: 1px solid #dc3545; color: #dc3545; }
 
@@ -540,7 +540,7 @@ body {
   --panel-corporativo: #003b17;
   --panel-fondo: #f4faf7;
   --panel-borde: #dcede5;
-  --panel-texto: #244a39;
+  --panel-texto: #003b17;
   --panel-texto-suave: #698679;
 }
 
@@ -591,7 +591,7 @@ body.page-panel-gestion .panel-header .card-body {
 }
 
 body.page-panel-gestion .panel-header h2 {
-  color: #183327;
+  color: #003b17;
   font-size: clamp(1.7rem, 2.15vw, 2.35rem);
   font-weight: 600 !important;
   letter-spacing: -0.025em;
@@ -610,13 +610,13 @@ body.page-panel-gestion .panel-header .btn {
 }
 
 body.page-panel-gestion .btn-panel-create {
-  background: #16864d;
-  border-color: #16864d;
+  background: #003b17;
+  border-color: #003b17;
 }
 
 body.page-panel-gestion .btn-panel-create:hover {
-  background: #11713f;
-  border-color: #11713f;
+  background: #003b17;
+  border-color: #003b17;
 }
 
 /* Resumen visual de los siete pasos. */
@@ -640,7 +640,7 @@ body.page-panel-gestion .btn-panel-create:hover {
   flex: 0 0 64px;
   display: grid;
   place-items: center;
-  color: #3caa79;
+  color: #003b17;
   background: #ebf8f2;
   border-radius: 50%;
   font-size: 1.9rem;
@@ -648,7 +648,7 @@ body.page-panel-gestion .btn-panel-create:hover {
 
 .panel-wizard-guide__intro h3 {
   margin: 0 0 4px;
-  color: #276e4e;
+  color: #003b17;
   font-size: 1.25rem;
   font-weight: 600;
 }
@@ -691,7 +691,7 @@ body.page-panel-gestion .btn-panel-create:hover {
   z-index: 1;
   display: grid;
   place-items: center;
-  color: #3caa79;
+  color: #003b17;
   background: #ffffff;
   border: 1px solid #b5e5cf;
   border-radius: 50%;

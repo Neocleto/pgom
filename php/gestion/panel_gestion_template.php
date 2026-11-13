@@ -13,17 +13,17 @@
 
     <!-- Boostrap -->
     <link rel="stylesheet" href="lib/bootstrap/css/bootstrap@5.3.0.min.css">
-    <link rel="stylesheet" href="css/tema-pgom.css">
+    <link rel="stylesheet" href="css/tema-pgom.css?v=pgom-estados-20261113-4">
     <link rel="stylesheet" href="lib/bootstrap/css/bootstrap-icons.css">
 
     <!-- bootstrap-select para Bootstrap 5 -->
     <link rel="stylesheet" href="lib/bootstrap/css/bootstrap-select.min.css">
 
-    <link rel="stylesheet" href="css/acceso-moderno.css">
-    <link rel="stylesheet" href="css/panel.css">
-    <link rel="stylesheet" href="css/tabla-municipio.css">
+    <link rel="stylesheet" href="css/acceso-moderno.css?v=pgom-pie-gris-20261113-3">
+    <link rel="stylesheet" href="css/panel.css?v=pgom-estados-20261113-4">
+    <link rel="stylesheet" href="css/tabla-municipio.css?v=pgom-estados-20261113-4">
     <link rel="stylesheet" href="css/wizard.css?v=<?= (int)@filemtime(dirname(__DIR__, 2) . '/css/wizard.css') ?>">
-    <link rel="stylesheet" href="css/tour.css">
+    <link rel="stylesheet" href="css/tour.css?v=pgom-verde-20261113-2">
 </head>
 
 <body class="pgom-panel-page page-panel-gestion panel-loading">
@@ -327,19 +327,19 @@
     <script src="lib/Sortable.min.js"></script>
 
     <!-- Script proyecto -->
-    <script src="js/login/verificacion_sesion.js"></script>
+    <script src="js/login/verificacion_sesion.js?v=pgom-verde-20261113-2"></script>
     <script src="js/gestion/utilidadesGestion.js?v=<?= (int)@filemtime(dirname(__DIR__, 2) . '/js/gestion/utilidadesGestion.js') ?>"></script>
     <script src="js/gestion/editorEnriquecido.js?v=<?= (int)@filemtime(dirname(__DIR__, 2) . '/js/gestion/editorEnriquecido.js') ?>"></script>
     <script src="js/gestion/wizard.js?v=<?= (int)@filemtime(dirname(__DIR__, 2) . '/js/gestion/wizard.js') ?>"></script>
     <script src="js/gestion/configuracionVisualWizard.js?v=<?= (int)@filemtime(dirname(__DIR__, 2) . '/js/gestion/configuracionVisualWizard.js') ?>"></script>
     <script src="js/gestion/plantillaWizard.js?v=1"></script>
     <script src="js/gestion/tablaMunicipios.js?v=<?= (int)@filemtime(dirname(__DIR__, 2) . '/js/gestion/tablaMunicipios.js') ?>"></script>
-    <script src="js/gestion/fasesWizard.js"></script>
+    <script src="js/gestion/fasesWizard.js?v=pgom-verde-20261113-2"></script>
     <script src="js/gestion/documentosWizard.js?v=<?= (int)@filemtime(dirname(__DIR__, 2) . '/js/gestion/documentosWizard.js') ?>"></script>
     <script src="js/gestion/participacionWizard.js?v=<?= (int)@filemtime(dirname(__DIR__, 2) . '/js/gestion/participacionWizard.js') ?>"></script>
     <script src="js/gestion/noticiasWizard.js?v=<?= (int)@filemtime(dirname(__DIR__, 2) . '/js/gestion/noticiasWizard.js') ?>"></script>
-    <script src="js/gestion/faqsWizard.js"></script>
-    <script src="js/gestion/tour.js"></script>
+    <script src="js/gestion/faqsWizard.js?v=pgom-verde-20261113-2"></script>
+    <script src="js/gestion/tour.js?v=pgom-verde-20261113-2"></script>
 
     <script>
         // Eventos pequeños de ayuda que pertenecen únicamente a esta vista.

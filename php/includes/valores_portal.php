@@ -6,6 +6,36 @@
 // No contiene consultas ni escribe en la base de datos.
 // ============================================================================
 
+/**
+ * Unifica los nombres de los iconos propios guardados por otras versiones.
+ * Conserva los iconos de Bootstrap y el valor vacío elegido por el gestor.
+ */
+function normalizarIconoPortal($icono)
+{
+    $icono = trim((string)$icono);
+    $icono = preg_replace('/^(?:bi\s+)?bi-/', '', $icono);
+    if ($icono === '') {
+        return '';
+    }
+    if (preg_match('/^(?:[a-z0-9]+-)?(fases|manos|documentos|noticias|buzon|encuesta-infantil|encuesta-participacion)$/i', $icono, $coincidencia)) {
+        return 'pgom-' . strtolower($coincidencia[1]);
+    }
+    return preg_match('/^[a-zA-Z0-9-]+$/', $icono) ? $icono : 'link-45deg';
+}
+
+/** Normaliza los campos de icono en filas y contenido JSON sin escribir datos. */
+function normalizarIconosDatosPortal(array $datos)
+{
+    foreach ($datos as $clave => $valor) {
+        if (is_array($valor)) {
+            $datos[$clave] = normalizarIconosDatosPortal($valor);
+        } elseif ($clave === 'icono' || (is_string($clave) && substr($clave, -6) === '_icono')) {
+            $datos[$clave] = normalizarIconoPortal($valor);
+        }
+    }
+    return $datos;
+}
+
 /** Estructura, colores e iconos del portal dinámico de referencia. */
 function obtenerSeccionesInicialesPortal()
 {

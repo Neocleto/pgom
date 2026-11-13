@@ -1,6 +1,7 @@
 /* Identidad de PGOM compartida por acceso, gestión y páginas públicas.
    Mantiene las librerías originales y adapta los componentes de Bootstrap. */
 :root {
+    --pgom-footer-bg: #4d4d4d;
     --bs-primary: #003b17;
     --bs-primary-rgb: 0, 59, 23;
     --bs-primary-text-emphasis: #00230e;
@@ -39,5 +40,15 @@
 .form-check-input:focus { border-color: #74a78b; box-shadow: 0 0 0 .25rem rgba(0, 59, 23, .18); }
 .dropdown-menu { --bs-dropdown-link-active-bg: #003b17; }
 .nav-pills { --bs-nav-pills-link-active-bg: #003b17; }
-.pagination { --bs-pagination-active-bg: #003b17; --bs-pagination-active-border-color: #003b17; --bs-pagination-color: #003b17; }
+.pagination {
+    --bs-pagination-active-bg: #003b17;
+    --bs-pagination-active-border-color: #003b17;
+    --bs-pagination-color: #003b17;
+    --bs-pagination-hover-color: #002b11;
+    --bs-pagination-hover-bg: #edf5f0;
+    --bs-pagination-hover-border-color: #b9d0c2;
+    --bs-pagination-focus-color: #003b17;
+    --bs-pagination-focus-bg: #edf5f0;
+    --bs-pagination-focus-box-shadow: 0 0 0 .25rem rgba(0, 59, 23, .18);
+}
 .accordion { --bs-accordion-active-color: #00230e; --bs-accordion-active-bg: #edf5f0; --bs-accordion-btn-focus-box-shadow: 0 0 0 .25rem rgba(0, 59, 23, .18); }

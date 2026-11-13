@@ -222,7 +222,7 @@ function confirmarEliminarMunicipio(codMun) {
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#d33',
-        cancelButtonColor: '#3085d6',
+        cancelButtonColor: '#003b17',
         confirmButtonText: 'Sí, eliminar',
         cancelButtonText: 'Cancelar'
     }).then((result) => {

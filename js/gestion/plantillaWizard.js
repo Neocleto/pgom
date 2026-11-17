@@ -21,20 +21,37 @@ const PLANTILLA_WIZARD = {
     buzon_participacion_activo: '1'
   },
   paso2: {
-    titulo: 'Motivos para la elaboración del nuevo PGOM',
-    descripcion: `La reciente normativa andaluza, conocida como LISTA, se orienta hacia el fomento de la sostenibilidad territorial, introduciendo modificaciones significativas para responder de manera más eficiente a las nuevas exigencias del contexto actual. Esta ley, enfocada en la regulación de la ordenación del territorio y el urbanismo, facilita los procedimientos para la aprobación de planes urbanísticos y trae conceptos innovadores en cuanto a la clasificación del suelo y nuevas estrategias de planificación. Estas últimas buscan reforzar el desarrollo de las áreas urbanas ya existentes, delegando un papel más activo a los Ayuntamientos.
-    Dentro de este marco normativo, y considerando las particularidades de {municipio}, el Ayuntamiento ha emprendido la tarea de revisar y actualizar su planificación general para alinearla con la LISTA. Este esfuerzo se ve apoyado por las iniciativas del Área de Cohesión Territorial de la Diputación Provincial de Málaga, que promueve un nuevo modelo de asistencia técnica en materia de urbanismo a través de ayudas financieras. El objetivo de esta acción es modernizar y adaptar la planificación urbana de {municipio} a las actuales demandas sociales y a las directrices que marca la ley vigente.`
+    titulo: 'Para qué sirve el plan general de ordenación municipal',
+    descripcion: `
+      <p>El Plan General de Ordenación Municipal (PGOM) define el modelo general de ordenación urbanística del municipio y establece las directrices que orientan su desarrollo futuro. Su elaboración permite que la ciudadanía conozca las propuestas y participe en las decisiones sobre su territorio.</p>
+      <p>La planificación urbanística debe tener en cuenta la legislación vigente de ámbito autonómico y estatal, así como las características y necesidades específicas del municipio, para impulsar un desarrollo equilibrado y sostenible.</p>
+      <p>El PGOM se elabora con participación ciudadana en el marco de la Ley de Impulso para la Sostenibilidad del Territorio de Andalucía (LISTA), que regula la ordenación del territorio y el urbanismo y establece los procedimientos de tramitación de los instrumentos urbanísticos.</p>
+      <p>La LISTA promueve la conservación y mejora de los núcleos urbanos existentes, el aprovechamiento adecuado de sus recursos y la planificación justificada de las actuaciones que resulten necesarias.</p>
+      <p>Este PGOM es un documento urbanístico elaborado en el marco de la asistencia técnica en planeamiento. Su objetivo es proporcionar al municipio un instrumento de ordenación urbanística general adaptado a las directrices de la legislación vigente y a las necesidades actuales de la ciudadanía.</p>
+    `.trim()
   },
   paso3: {
     num_fase: '1',
-    subfase_id:'1',
+    codigo_subfase: '1.1',
     estado_tramitacion: 'Esta fase inicia el proceso de elaboración del PGOM, donde se plantea un plan de participación pública que recoge acciones como encuestas, reuniones vecinales, buzones de sugerencias, sesiones informativas, herramientas digitales y mecanismos de retroalimentación continua.',
-    fecha_inicio: () => new Date().toISOString().split('T')[0]
+    // Fecha de aplicación en el horario local del navegador, no en UTC.
+    fecha_inicio: () => {
+      const hoy = new Date();
+      const anio = hoy.getFullYear();
+      const mes = String(hoy.getMonth() + 1).padStart(2, '0');
+      const dia = String(hoy.getDate()).padStart(2, '0');
+      return `${anio}-${mes}-${dia}`;
+    }
   },
   paso5: {
-    // Estos textos se guardan solo para mantener compatibilidad con la tabla antigua.
-    titulo1: 'Participa en el PGOM',
-    descripcion1: 'El PGOM se construye también con la participación de la ciudadanía.',
+    // El asistente mantiene estos campos por compatibilidad con el módulo de participación.
+    titulo1: 'Participación ciudadana en el PGOM',
+    descripcion1: `
+      <p>La implicación de los ciudadanos en la Participación es un pilar esencial en la elaboración del <strong>Plan General de Ordenación Municipal (PGOM)</strong>. Este enfoque se centra en combinar las vivencias y perspectivas de la comunidad, con la experiencia técnica y administrativa del equipo del <strong>Servicio de Arquitectura y Planeamiento de la Diputación de Málaga</strong>, encargado de su redacción.</p>
+      <p>El propósito es lograr que este instrumento de ordenación urbanística general se fundamente en un <strong>amplio consenso</strong> y aborde efectivamente las <strong>necesidades concretas del municipio</strong>.</p>
+      <p>A través de este <strong>proceso colaborativo</strong>, se buscan soluciones que no solo sean técnicamente sólidas, sino que también alcancen un alto grado de aceptación entre los habitantes del municipio.</p>
+      <p>Este método de participación garantiza que los planes reflejen una <strong>visión compartida</strong> y sean más efectivos en su <strong>implementación y sostenibilidad</strong>.</p>
+    `.trim(),
     titulo2: 'Encuestas y formularios',
     descripcion2: 'Consulta los formularios y recursos disponibles para participar.'
   },
@@ -103,7 +120,13 @@ function escribirCampoTexto(inputEl, valor, modo) {
   const nuevo = (typeof valor === 'function') ? valor() : valor;
   if (modo === 'sobrescribir' || (modo === 'soloVacios' && actual === '')) {
     const valorFinal = String(nuevo ?? '').replaceAll('{municipio}', obtenerNombreMunicipioPlantilla());
-    actualizarEditorEnriquecido(inputEl.id, valorFinal);
+    // Solo los textareas enriquecidos necesitan CKEditor. Los selects,
+    // fechas e inputs normales requieren su valor literal, sin etiquetas <p>.
+    if (inputEl.tagName === 'TEXTAREA' && inputEl.dataset.richEditor === '1') {
+      actualizarEditorEnriquecido(inputEl.id, valorFinal);
+    } else {
+      inputEl.value = valorFinal;
+    }
   }
 }
 
@@ -250,16 +273,47 @@ async function aplicarPlantilla(modo = 'soloVacios') {
   escribirCampoTexto(document.getElementById('descripcion'), PLANTILLA_WIZARD.paso2.descripcion, modo);
   if (typeof guardarDatosPaso === 'function') guardarDatosPaso(2);
 
-  // Paso 3 (fase actual)
-  escribirCampoTexto(document.getElementById('fase_padre'), PLANTILLA_WIZARD.paso3.num_fase, modo);
+  // Paso 3: fase 1 y subfase 1.1. El identificador de la subfase
+  // puede variar entre bases de datos; se busca por su código visible.
+  const selectorFase = document.getElementById('fase_padre');
+  const selectorSubfase = document.getElementById('subfase_id');
+  const rellenarFase = modo === 'sobrescribir' || !selectorFase?.value;
 
-  // Cargamos las subfases antes de seleccionar una. De esta forma el estado
-  // propuesto y el selector siempre quedan sincronizados.
-  if (window.FasesWizard && typeof window.FasesWizard.cargarSubfases === 'function') {
-    await window.FasesWizard.cargarSubfases(
-      PLANTILLA_WIZARD.paso3.num_fase,
-      PLANTILLA_WIZARD.paso3.subfase_id
-    );
+  if (rellenarFase) {
+    // En el wizard las fases se cargan por AJAX. Si aún están cargando,
+    // esperamos a que exista la opción antes de seleccionar la fase 1.
+    const faseInicial = PLANTILLA_WIZARD.paso3.num_fase;
+    const tieneFase = selectorFase && Array.from(selectorFase.options).some(function (opcion) {
+      return opcion.value === faseInicial;
+    });
+    if (!tieneFase && window.FasesWizard && typeof window.FasesWizard.cargarFasesPadre === 'function') {
+      await window.FasesWizard.cargarFasesPadre(faseInicial);
+    }
+    escribirCampoTexto(selectorFase, faseInicial, 'sobrescribir');
+    if (!selectorFase || selectorFase.value !== faseInicial) {
+      Swal.fire('No se pudo cargar la fase 1', 'Comprueba que el listado de fases esté disponible y vuelve a cargar la plantilla.', 'error');
+      return;
+    }
+    if (window.FasesWizard && typeof window.FasesWizard.cargarSubfases === 'function') {
+      await window.FasesWizard.cargarSubfases(PLANTILLA_WIZARD.paso3.num_fase);
+    }
+    if (selectorSubfase) {
+      const subfaseInicial = Array.from(selectorSubfase.options).find(function (opcion) {
+        const etiqueta = opcion.textContent.trim();
+        return etiqueta === PLANTILLA_WIZARD.paso3.codigo_subfase
+          || etiqueta.startsWith(PLANTILLA_WIZARD.paso3.codigo_subfase + ' ');
+      });
+      if (subfaseInicial) {
+        selectorSubfase.value = subfaseInicial.value;
+      }
+      if (!selectorSubfase.value) {
+        Swal.fire('No se pudo cargar la subfase 1.1', 'Comprueba que esta subfase exista para la fase 1 y vuelve a aplicar la plantilla.', 'error');
+        return;
+      }
+    }
+  } else if (!selectorSubfase?.value && window.FasesWizard && typeof window.FasesWizard.cargarSubfases === 'function') {
+    // Al rellenar solo huecos se respeta la fase existente.
+    await window.FasesWizard.cargarSubfases(selectorFase.value);
   }
 
   escribirCampoTexto(document.getElementById('estado_tramitacion'), PLANTILLA_WIZARD.paso3.estado_tramitacion, modo);

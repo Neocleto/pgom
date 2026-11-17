@@ -40,7 +40,7 @@ function normalizarIconosDatosPortal(array $datos)
 function obtenerSeccionesInicialesPortal()
 {
     return [
-        ['id' => 'informacion', 'titulo' => 'Para qué sirve el PGOM', 'icono' => 'info-circle', 'color' => '#003b17', 'visible' => true],
+        ['id' => 'informacion', 'titulo' => 'Para qué sirve el plan general de ordenación municipal', 'icono' => 'info-circle', 'color' => '#003b17', 'visible' => true],
         ['id' => 'fases', 'titulo' => 'Fases en la tramitación del PGOM', 'icono' => 'pgom-fases', 'color' => '#003b17', 'visible' => true],
         ['id' => 'participacion', 'titulo' => 'Participación ciudadana en el PGOM', 'icono' => 'pgom-manos', 'color' => '#003b17', 'visible' => true],
         ['id' => 'documentos', 'titulo' => 'Documentos del PGOM', 'icono' => 'pgom-documentos', 'color' => '#003b17', 'visible' => true],
@@ -63,12 +63,15 @@ function obtenerContenidoInicialPortal()
         ],
         'fases' => [
             'kicker' => 'Estado del expediente',
-            'etiqueta_fase' => 'Fase actual',
+            'etiqueta_fase' => 'FASE ACTUAL',
             'etiqueta_estado' => 'Estado de la tramitación'
         ],
         'participacion' => [
             'kicker' => 'Participación ciudadana',
-            'introduccion' => 'El PGOM se construye con la participación de la ciudadanía. Consulta los materiales disponibles, responde las encuestas y comparte tu visión sobre el futuro del municipio.',
+            'introduccion' => '<p>La implicación de los ciudadanos en la Participación es un pilar esencial en la elaboración del <strong>Plan General de Ordenación Municipal (PGOM)</strong>. Este enfoque se centra en combinar las vivencias y perspectivas de la comunidad, con la experiencia técnica y administrativa del equipo del <strong>Servicio de Arquitectura y Planeamiento de la Diputación de Málaga</strong>, encargado de su redacción.</p>'
+                . '<p>El propósito es lograr que este instrumento de ordenación urbanística general se fundamente en un <strong>amplio consenso</strong> y aborde efectivamente las <strong>necesidades concretas del municipio</strong>.</p>'
+                . '<p>A través de este <strong>proceso colaborativo</strong>, se buscan soluciones que no solo sean técnicamente sólidas, sino que también alcancen un alto grado de aceptación entre los habitantes del municipio.</p>'
+                . '<p>Este método de participación garantiza que los planes reflejen una <strong>visión compartida</strong> y sean más efectivos en su <strong>implementación y sostenibilidad</strong>.</p>',
             'formularios_titulo' => 'Encuestas y formularios',
             'formularios_descripcion' => 'Elige un formulario para responder online o descargar su versión imprimible.'
         ],
@@ -127,7 +130,6 @@ function obtenerConfiguracionInicialPortal($codMun = '')
 function obtenerAccesosInicialesPortal()
 {
     $accesos = [
-        ['titulo' => 'Información del plan', 'descripcion' => 'Conoce el plan', 'icono' => 'layers', 'color' => '#003b17', 'destino' => '#informacion'],
         ['titulo' => 'Fases de tramitación', 'descripcion' => 'Consulta el estado del expediente', 'icono' => 'pgom-fases', 'color' => '#003b17', 'destino' => '#fases'],
         ['titulo' => 'Participación', 'descripcion' => 'Aporta tu opinión', 'icono' => 'pgom-manos', 'color' => '#003b17', 'destino' => '#participacion'],
         ['titulo' => 'Documentos', 'descripcion' => 'Consulta y descarga', 'icono' => 'pgom-documentos', 'color' => '#003b17', 'destino' => '#documentos'],

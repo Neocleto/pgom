@@ -79,6 +79,9 @@ function prepararCatalogoDocumentos(array $documentos, array $catalogo)
             }
         }
         $estadosFases[$numero] = $estado;
+        if (isset($menu[$numero])) {
+            $menu[$numero]['estado'] = $estado;
+        }
     }
     foreach ($botones as $paso => &$boton) {
         $boton['estado'] = 'pendiente';

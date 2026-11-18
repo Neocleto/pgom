@@ -8,7 +8,6 @@
 // ============================================================================
 
 require_once __DIR__ . '/../includes/valores_portal.php';
-require_once __DIR__ . '/../includes/cabecera_portal.php';
 require_once __DIR__ . '/../includes/html_portal.php';
 
 class ConfiguracionVisualModel
@@ -42,55 +41,10 @@ class ConfiguracionVisualModel
             $configuracion['mostrar_accesos'] ?? true
         );
 
-        // La paleta multicolor antigua era el valor de fábrica. Al actualizar
-        // solo esa paleta (no una personalizada) se adopta el verde corporativo.
-        $anteriores = [
-            'color_secundario' => '#0f4593',
-            'color_participacion' => '#267249',
-            'color_documentos' => '#1756b8',
-            'color_noticias' => '#6e54a3',
-            'color_buzon' => '#ef6c24'
-        ];
-        $paletaSinEditar = true;
-        foreach ($anteriores as $campo => $color) {
-            if (strcasecmp((string)($configuracion[$campo] ?? ''), $color) !== 0) {
-                $paletaSinEditar = false;
-                break;
-            }
-        }
-        if ($paletaSinEditar) {
-            foreach ($anteriores as $campo => $color) {
-                $configuracion[$campo] = $configuracion['color_primario'];
-            }
-        }
-
         // 1. Completamos las secciones antiguas con los valores nuevos.
         $configuracion['secciones_portal'] = $this->normalizarSecciones(
             $configuracion['secciones_portal'] ?? []
         );
-
-        $coloresAnteriores = [
-            'informacion' => '#0f4593', 'fases' => '#0f4593',
-            'participacion' => '#267249', 'documentos' => '#1756b8',
-            'actualidad' => '#6e54a3', 'buzon' => '#ef6c24'
-        ];
-        $coloresSinEditar = true;
-        foreach ($configuracion['secciones_portal'] as $seccion) {
-            $id = $seccion['id'] ?? '';
-            if (isset($coloresAnteriores[$id])
-                && strcasecmp((string)$seccion['color'], $coloresAnteriores[$id]) !== 0) {
-                $coloresSinEditar = false;
-                break;
-            }
-        }
-        if ($coloresSinEditar) {
-            foreach ($configuracion['secciones_portal'] as &$seccion) {
-                if (isset($coloresAnteriores[$seccion['id']])) {
-                    $seccion['color'] = $configuracion['color_primario'];
-                }
-            }
-            unset($seccion);
-        }
 
         // 2. Completamos también los textos del portal. Así una instalación
         //    anterior sigue funcionando aunque todavía no haya personalizado nada.
@@ -179,49 +133,6 @@ class ConfiguracionVisualModel
     }
 
     /**
-     * Genera el diseño general y el índice común cuando el usuario aplica la plantilla.
-     * No crea botones, documentos ni noticias porque son propios de cada municipio.
-     */
-    public function aplicarPlantillaInicial($codMun, $modo = 'sobrescribir', $participacion = [])
-    {
-        $soloVacios = $modo === 'soloVacios';
-
-        // 1. En modo "rellenar vacíos" conservamos un diseño ya guardado.
-        $stmtConfig = $this->conn->prepare(
-            "SELECT COUNT(*) FROM pgom.configuracion_visual WHERE cod_mun = :cod_mun"
-        );
-        $stmtConfig->execute([':cod_mun' => $codMun]);
-        $tieneConfiguracion = (int)$stmtConfig->fetchColumn() > 0;
-
-        if (!$soloVacios || !$tieneConfiguracion) {
-            $configuracion = obtenerConfiguracionInicialPortal($codMun);
-            if (isset($participacion['titulo1'], $participacion['descripcion1'])) {
-                // El paso 5 ya contiene la plantilla aplicada y las correcciones del usuario.
-                foreach ($configuracion['secciones_portal'] as &$seccion) {
-                    if ($seccion['id'] === 'participacion') {
-                        $seccion['titulo'] = $participacion['titulo1'];
-                        break;
-                    }
-                }
-                unset($seccion);
-                $configuracion['contenido_portal']['participacion']['introduccion'] = $participacion['descripcion1'];
-            }
-            $this->guardar($configuracion);
-        }
-
-        // 2. Los accesos se crean si faltan o se sustituyen al sobrescribir.
-        $stmtAccesos = $this->conn->prepare(
-            "SELECT COUNT(*) FROM pgom.accesos_publicos WHERE cod_mun = :cod_mun"
-        );
-        $stmtAccesos->execute([':cod_mun' => $codMun]);
-        $tieneAccesos = (int)$stmtAccesos->fetchColumn() > 0;
-
-        if (!$soloVacios || !$tieneAccesos) {
-            $this->guardarAccesos($codMun, obtenerAccesosInicialesPortal());
-        }
-    }
-
-    /**
      * Obtiene los accesos rápidos ordenados.
      */
     public function obtenerAccesos($codMun, $soloVisibles = false)
@@ -235,28 +146,7 @@ class ConfiguracionVisualModel
         $stmt = $this->conn->prepare($sql);
         $stmt->execute([':cod_mun' => $codMun]);
 
-        $accesos = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        $anteriores = [
-            '#informacion' => '#0f4593',
-            '#participacion' => '#267249',
-            '#documentos' => '#1756b8'
-        ];
-        $sinPersonalizar = count($accesos) === 3;
-        foreach ($accesos as $acceso) {
-            $destino = $acceso['destino'] ?? '';
-            if (!isset($anteriores[$destino])
-                || strcasecmp((string)($acceso['color'] ?? ''), $anteriores[$destino]) !== 0) {
-                $sinPersonalizar = false;
-                break;
-            }
-        }
-        if ($sinPersonalizar) {
-            $configuracion = $this->obtenerPorMunicipio($codMun);
-            foreach ($accesos as &$acceso) {
-                $acceso['color'] = $configuracion['color_primario'];
-            }
-            unset($acceso);
-        }
+        $accesos = normalizarIconosDatosPortal($stmt->fetchAll(PDO::FETCH_ASSOC));
         // Una lista guardada vacía es válida. Solo un municipio sin diseño
         // previo recibe los accesos de fábrica; borrar el último no los repone.
         if (!$accesos) {
@@ -273,7 +163,7 @@ class ConfiguracionVisualModel
                 return $this->normalizarBooleano($acceso['visible'] ?? true);
             }));
         }
-        return normalizarIconosDatosPortal($accesos);
+        return $accesos;
     }
 
     /**
@@ -487,8 +377,7 @@ class ConfiguracionVisualModel
             $contenido
         );
 
-        $contenido['cabecera'] = actualizarTextosCabeceraPortal($contenido['cabecera']);
-
+        
         // Eliminamos el texto del antiguo distintivo de la cabecera.
         unset($contenido['cabecera']['mensaje_destacado'], $contenido['cabecera']['subtitulo'], $contenido['documentos']['boton_texto']);
 
@@ -540,6 +429,10 @@ class ConfiguracionVisualModel
 
         if (is_bool($valor) || is_int($valor) || is_float($valor)) {
             return $valor;
+        }
+
+        if ($claveActual === 'icono' || substr($claveActual, -6) === '_icono') {
+            return $this->normalizarIcono($valor);
         }
 
         $camposEnriquecidos = [

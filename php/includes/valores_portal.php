@@ -1,40 +1,11 @@
 <?php
+require_once __DIR__ . '/iconos_portal.php';
 // ============================================================================
 // VALORES INICIALES DEL PORTAL MUNICIPAL
 // Modelo, página pública y configurador consumen este mismo diseño.
 // Cambiar aquí los valores de fábrica no reemplaza textos personalizados.
 // No contiene consultas ni escribe en la base de datos.
 // ============================================================================
-
-/**
- * Unifica los nombres de los iconos propios guardados por otras versiones.
- * Conserva los iconos de Bootstrap y el valor vacío elegido por el gestor.
- */
-function normalizarIconoPortal($icono)
-{
-    $icono = trim((string)$icono);
-    $icono = preg_replace('/^(?:bi\s+)?bi-/', '', $icono);
-    if ($icono === '') {
-        return '';
-    }
-    if (preg_match('/^(?:[a-z0-9]+-)?(fases|manos|documentos|noticias|buzon|encuesta-infantil|encuesta-participacion)$/i', $icono, $coincidencia)) {
-        return 'pgom-' . strtolower($coincidencia[1]);
-    }
-    return preg_match('/^[a-zA-Z0-9-]+$/', $icono) ? $icono : 'link-45deg';
-}
-
-/** Normaliza los campos de icono en filas y contenido JSON sin escribir datos. */
-function normalizarIconosDatosPortal(array $datos)
-{
-    foreach ($datos as $clave => $valor) {
-        if (is_array($valor)) {
-            $datos[$clave] = normalizarIconosDatosPortal($valor);
-        } elseif ($clave === 'icono' || (is_string($clave) && substr($clave, -6) === '_icono')) {
-            $datos[$clave] = normalizarIconoPortal($valor);
-        }
-    }
-    return $datos;
-}
 
 /** Estructura, colores e iconos del portal dinámico de referencia. */
 function obtenerSeccionesInicialesPortal()
@@ -68,10 +39,8 @@ function obtenerContenidoInicialPortal()
         ],
         'participacion' => [
             'kicker' => 'Participación ciudadana',
-            'introduccion' => '<p>La implicación de los ciudadanos en la Participación es un pilar esencial en la elaboración del <strong>Plan General de Ordenación Municipal (PGOM)</strong>. Este enfoque se centra en combinar las vivencias y perspectivas de la comunidad, con la experiencia técnica y administrativa del equipo del <strong>Servicio de Arquitectura y Planeamiento de la Diputación de Málaga</strong>, encargado de su redacción.</p>'
-                . '<p>El propósito es lograr que este instrumento de ordenación urbanística general se fundamente en un <strong>amplio consenso</strong> y aborde efectivamente las <strong>necesidades concretas del municipio</strong>.</p>'
-                . '<p>A través de este <strong>proceso colaborativo</strong>, se buscan soluciones que no solo sean técnicamente sólidas, sino que también alcancen un alto grado de aceptación entre los habitantes del municipio.</p>'
-                . '<p>Este método de participación garantiza que los planes reflejen una <strong>visión compartida</strong> y sean más efectivos en su <strong>implementación y sostenibilidad</strong>.</p>',
+            // El texto se escribe en gestión o se incorpora al aplicar la plantilla.
+            'introduccion' => '',
             'formularios_titulo' => 'Encuestas y formularios',
             'formularios_descripcion' => 'Elige un formulario para responder online o descargar su versión imprimible.'
         ],

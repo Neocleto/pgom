@@ -5,6 +5,17 @@
 // Conserva la lógica de fases y categorías, pero comparte la identidad visual
 // y los márgenes del portal municipal.
 // ============================================================================
+/**
+ * Datos preparados por DocumentosController::mostrarDocumentos() y asignados
+ * en documentos.php antes de incluir esta vista, también cuando no hay archivos.
+ * @var array $municipio
+ * @var array $fasesMenu
+ * @var array $documentosPorFase
+ * @var array $estadosFases
+ * @var int $faseActualNum
+ * @var array $configuracionVisual
+ * @var bool $modoPreview
+ */
 require_once __DIR__ . '/../includes/valores_portal.php';
 require_once __DIR__ . '/../includes/imagenes_municipio.php';
 $configuracion = array_merge(obtenerConfiguracionInicialPortal(), $configuracionVisual ?? []);
@@ -178,7 +189,7 @@ foreach ($documentosPorFase as $categorias) {
                         $columnasCategorias = max(1, min(3, $totalCategoriasFase));
                         ?>
                         <article
-                            class="tab-pane fade <?= $esActiva ? 'show active' : '' ?>"
+                            class="tab-pane fade show active"
                             id="<?= htmlspecialchars($idFase) ?>"
                             role="tabpanel"
                             aria-labelledby="<?= htmlspecialchars($idFase) ?>-tab"
@@ -197,9 +208,9 @@ foreach ($documentosPorFase as $categorias) {
                                 </div>
 
                                 <?php if ($hayDocumentos): ?>
-                                    <span class="documents-status <?= $esActiva ? 'is-current' : 'is-locked' ?>">
-                                        <i class="bi <?= $esActiva ? 'bi-unlock' : 'bi-lock' ?>"></i>
-                                        <?= $esActiva ? 'Descargas disponibles' : 'Consulta histórica' ?>
+                                    <span class="documents-status is-current">
+                                        <i class="bi bi-unlock"></i>
+                                        Descargas disponibles
                                     </span>
                                 <?php endif; ?>
                             </header>

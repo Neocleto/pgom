@@ -262,7 +262,7 @@ function renderMenuConfigurador() {
         ${bloquesFijos}
         <div class="portal-builder-menu__group">Bloques públicos</div>
         ${botonesSecciones}
-        ${crearBotonMenu('pie', 'Pie de página', 'Fondo corporativo y textos', 'layout-text-window-reverse', estadoPortal.configuracion.color_primario)}
+        ${crearBotonMenu('pie', 'Pie de página', 'Fondo gris y textos', 'layout-text-window-reverse', estadoPortal.configuracion.color_primario)}
     `;
 
     if (!menu || menu.querySelector('[data-add-custom-section]')) {
@@ -1192,10 +1192,6 @@ function recargarIframePortal() {
     iframe.src = url.toString();
 }
 
-/**
- * Ajusta el ancho del iframe para simular distintos dispositivos.
- */
-
 // ============================================================================
 // 8. AYUDANTES DE HTML Y DATOS
 // ============================================================================
@@ -1460,13 +1456,8 @@ function normalizarBotonParticipacion(boton) {
         return item.id === 'participacion';
     });
     const colorSeccion = seccion?.color || estadoPortal.configuracion.color_primario || '#003b17';
-    const colorGuardado = String(boton.color || '').toLowerCase();
-
-    // Los registros antiguos guardaban estos tonos fijos sin personalizar.
-    // Al abrir el editor pasan a utilizar el color actual de la sección.
-    const colorRecurso = !colorGuardado || ['#267249', '#ef6c24'].includes(colorGuardado)
-        ? colorSeccion
-        : boton.color;
+    // Se respeta cualquier color elegido; solo el vacío hereda el del bloque.
+    const colorRecurso = String(boton.color || '').trim() || colorSeccion;
 
     return {
         id: Number(boton.id || 0),

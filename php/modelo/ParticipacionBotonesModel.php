@@ -1,6 +1,6 @@
 <?php
 require_once __DIR__ . '/../includes/archivos_municipio.php';
-require_once __DIR__ . '/../includes/valores_portal.php';
+require_once __DIR__ . '/../includes/iconos_portal.php';
 // ============================================================================
 // MODELO: BOTONES DE PARTICIPACION
 //
@@ -252,7 +252,7 @@ class ParticipacionBotonesModel
         );
         $stmt->execute([':id' => (int)$id]);
 
-        return $stmt->fetch(PDO::FETCH_ASSOC);
+        return normalizarIconosDatosPortal($stmt->fetch(PDO::FETCH_ASSOC));
     }
 
     /**

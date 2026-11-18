@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/../includes/valores_portal.php';
+require_once __DIR__ . '/../includes/iconos_portal.php';
 
 // ============================================================================
 // MODELO DE FORMULARIOS DINÁMICOS
@@ -698,7 +698,7 @@ class FormularioDinamicoModel
             }
         }
 
-        if ($modalidad !== 'pdf' && $totalPreguntas === 0) {
+        if ($totalPreguntas === 0) {
             throw new Exception(
                 'Los formularios online necesitan al menos una pregunta.'
             );

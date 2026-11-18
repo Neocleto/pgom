@@ -26,7 +26,7 @@ const estadoEditorContenido = {
 const contenidoPortalInicial = datosInicialesPortal.valores_iniciales.contenido_portal;
 
 /**
- * Completa los textos y datos que puedan faltar en instalaciones anteriores.
+ * Completa solo los campos ausentes con los valores de la plantilla.
  */
 function prepararContenidoCompleto() {
     estadoPortal.contenido = combinarObjetosContenido(
@@ -38,15 +38,6 @@ function prepararContenidoCompleto() {
     delete estadoPortal.contenido.cabecera.mensaje_destacado;
     delete estadoPortal.contenido.cabecera.subtitulo;
     delete estadoPortal.contenido.documentos.boton_texto;
-
-    const tituloGuardado = String(estadoPortal.contenido.cabecera.titulo || '').trim();
-    const tituloAntiguo = `PGOM de ${estadoPortal.municipio.nombre || ''}`.trim();
-    if (
-        tituloGuardado === 'PGOM de {municipio}'
-        || tituloGuardado.toLocaleLowerCase('es') === tituloAntiguo.toLocaleLowerCase('es')
-    ) {
-        estadoPortal.contenido.cabecera.titulo = 'Plan General de Ordenación Municipal';
-    }
 
     estadoPortal.datosContenido = combinarObjetosContenido({
         informacion: { titulo: '', descripcion: '' },
@@ -74,11 +65,6 @@ function prepararContenidoCompleto() {
         else estadoPortal.datosContenido.informacion.titulo = seccionInformacion.titulo;
     }
 
-    const etiqueta = String(estadoPortal.contenido?.cabecera?.etiqueta || '').trim();
-
-    if (!etiqueta || etiqueta === 'PGOM · Portal municipal de planeamiento') {
-        estadoPortal.contenido.cabecera.etiqueta = 'Portal municipal de planeamiento';
-    }
 
 }
 
@@ -555,14 +541,14 @@ function renderContenidoBuzon() {
     `;
 }
 
-/** El pie conserva los logotipos oficiales y permite adaptar su color y rótulos. */
+/** El pie conserva el fondo gris y los logotipos oficiales; permite editar los rótulos. */
 function renderPanelPie() {
     asegurarContenidoCompleto();
     const pie = estadoPortal.contenido.pie;
     establecerCabeceraPanel('Pie de página', 'Identidad y textos del ayuntamiento.');
     document.getElementById('contenidoPanelConfigurador').innerHTML = crearTarjetaConfiguracion(
         'Pie institucional',
-        'Fondo liso con el color corporativo del portal. Los logotipos oficiales se conservan.',
+        'Fondo gris institucional (#4D4D4D). Los logotipos oficiales se conservan.',
         `<div class="portal-config-grid">
             ${crearCampoTexto('Texto principal', 'contenido.pie.texto_principal', pie.texto_principal || '')}
             ${crearCampoTexto('Texto secundario', 'contenido.pie.texto_secundario', pie.texto_secundario || '')}
@@ -662,7 +648,7 @@ function crearEditorRecursoParticipacion(recurso) {
     const pdfFormulario = formularioSeleccionado?.pdf_url || recurso.formulario_pdf_url || '';
 
     return `
-        <div class="portal-content-editor">
+        <div class="portal-content-editor" style="--icon-choice-color:${escaparHtml(recurso.color || estadoPortal.configuracion.color_primario || '#003b17')}">
             <div class="portal-content-editor__heading">
                 <strong>${recurso.id ? 'Editar botón de participación' : 'Nuevo botón de participación'}</strong>
                 <button type="button" data-action="content-cancel-resource" title="Cerrar"><i class="bi bi-x-lg"></i></button>
@@ -686,7 +672,7 @@ function crearEditorRecursoParticipacion(recurso) {
 
                 ${crearCampoIcono('Icono del botón', 'resource-icon', icono, 'data-content-local')}
 
-                ${crearCampoColorLocal('Color del botón', 'resource-color', recurso.color || estadoPortal.configuracion.color_primario || '#003b17')}
+                ${crearCampoColorLocal('Color del botón y del icono', 'resource-color', recurso.color || estadoPortal.configuracion.color_primario || '#003b17')}
 
                 <div class="portal-config-field" style="grid-column:1/-1">
                     <div class="form-check form-switch">
@@ -983,7 +969,9 @@ document.addEventListener('input', function (evento) {
     }
 
     if (campo === 'resource-color') {
-        vista.style.setProperty('--item-color', evento.target.value || estadoPortal.configuracion.color_primario || '#003b17');
+        const color = evento.target.value || estadoPortal.configuracion.color_primario || '#003b17';
+        vista.style.setProperty('--item-color', color);
+        vista.closest('.portal-content-editor')?.style.setProperty('--icon-choice-color', color);
     }
 });
 

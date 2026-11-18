@@ -1,14 +1,13 @@
 <?php
+// Acceso de gestión: convenio vigente y proyecto correcto.
+require_once __DIR__ . '/../../login/permisos_proyecto.php';
+exigirAccesoProyecto(false, false);
+
 // php/gestion/formularios/panel_documentos.php
 
 require_once __DIR__ . '/../../db/conexion.php';
 require_once __DIR__ . '/../../modelo/MunicipioModel.php';
 
-if (session_status() === PHP_SESSION_NONE) session_start();
-if (empty($_SESSION['usuario_id'])) {
-    header('Location: /pgom/index.php');
-    exit;
-}
 
 $cod_mun = trim((string)($_GET['cod_mun'] ?? ''));
 $municipioModel = new MunicipioModel($conn);

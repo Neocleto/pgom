@@ -27,6 +27,7 @@ exigirAccesoProyecto(false, false);
     <link rel="stylesheet" href="css/acceso-moderno.css?v=pgom-pie-gris-20261113-3">
     <link rel="stylesheet" href="css/panel.css?v=pgom-estados-20261113-4">
     <link rel="stylesheet" href="css/tabla-municipio.css?v=pgom-estados-20261113-4">
+    <link rel="stylesheet" href="css/iconos-portal.css">
     <link rel="stylesheet" href="css/wizard.css?v=<?= (int)@filemtime(dirname(__DIR__, 2) . '/css/wizard.css') ?>">
     <link rel="stylesheet" href="css/tour.css?v=pgom-verde-20261113-2">
 </head>

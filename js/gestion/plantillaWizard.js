@@ -4,7 +4,7 @@ const PLANTILLA_WIZARD = {
     buzon_participacion_activo: '1'
   },
   paso2: {
-    titulo: 'Para qué sirve el plan general de ordenación municipal',
+    titulo: 'Para qué sirve el Plan General de Ordenación Municipal',
     descripcion: `
       <p>El Plan General de Ordenación Municipal (PGOM) define el modelo general de ordenación urbanística del municipio y establece las directrices que orientan su desarrollo futuro. Su elaboración permite que la ciudadanía conozca las propuestas y participe en las decisiones sobre su territorio.</p>
       <p>La planificación urbanística debe tener en cuenta la legislación vigente de ámbito autonómico y estatal, así como las características y necesidades específicas del municipio, para impulsar un desarrollo equilibrado y sostenible.</p>
@@ -191,7 +191,7 @@ document.getElementById('btnCargarPlantilla')?.addEventListener('click', async f
 
   const resultado = await Swal.fire({
     title: 'Aplicar plantilla',
-    text: 'Se sustituirán los textos de información y participación, la fase, el estado del buzón, las preguntas frecuentes, el diseño y los accesos. Pulsa Guardar para confirmar los cambios.',
+    text: 'Se sustituirán los textos de información y participación, la fase, el estado del buzón, las preguntas frecuentes, el diseño y los accesos. Pulsa Guardar para aplicar los cambios y crear los botones de participación si el municipio todavía no tiene ninguno.',
     icon: 'warning',
     showCancelButton: true,
     confirmButtonText: 'Aplicar plantilla',

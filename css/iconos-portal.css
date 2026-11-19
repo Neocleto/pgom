@@ -4,9 +4,7 @@
 .bi.bi-pgom-manos::before,
 .bi.bi-pgom-documentos::before,
 .bi.bi-pgom-noticias::before,
-.bi.bi-pgom-buzon::before,
-.bi.bi-pgom-encuesta-infantil::before,
-.bi.bi-pgom-encuesta-participacion::before {
+.bi.bi-pgom-buzon::before {
     content: "";
     display: inline-block;
     width: 1em;
@@ -27,5 +25,17 @@
 .bi.bi-pgom-documentos { --pgom-icono-mascara: url("../images/iconos/documentos.svg"); }
 .bi.bi-pgom-noticias { --pgom-icono-mascara: url("../images/iconos/noticias-mascara.svg"); }
 .bi.bi-pgom-buzon { --pgom-icono-mascara: url("../images/iconos/original-buzon.svg"); }
-.bi.bi-pgom-encuesta-infantil { --pgom-icono-mascara: url("../images/iconos/encuesta-infantil-mascara.svg"); }
-.bi.bi-pgom-encuesta-participacion { --pgom-icono-mascara: url("../images/iconos/encuesta-participacion-mascara.svg"); }
+
+/* El dibujo tiene fondo transparente y toma el color del icono del portal. */
+.bi.bi-pgom-encuesta-infantil::before,
+.bi.bi-pgom-encuesta-participacion::before {
+    content: "";
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+    vertical-align: -.125em;
+    background-color: currentColor;
+    mask: var(--icono-encuesta) center / contain no-repeat;
+}
+.bi.bi-pgom-encuesta-infantil { --icono-encuesta: url("../images/iconos/encuesta-infantil-contorno.svg"); }
+.bi.bi-pgom-encuesta-participacion { --icono-encuesta: url("../images/iconos/encuesta-participacion-contorno.svg"); }

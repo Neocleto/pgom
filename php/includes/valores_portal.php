@@ -11,7 +11,7 @@ require_once __DIR__ . '/iconos_portal.php';
 function obtenerSeccionesInicialesPortal()
 {
     return [
-        ['id' => 'informacion', 'titulo' => 'Para qué sirve el plan general de ordenación municipal', 'icono' => 'info-circle', 'color' => '#003b17', 'visible' => true],
+        ['id' => 'informacion', 'titulo' => 'Para qué sirve el Plan General de Ordenación Municipal', 'icono' => 'info-circle', 'color' => '#003b17', 'visible' => true],
         ['id' => 'fases', 'titulo' => 'Fases en la tramitación del PGOM', 'icono' => 'pgom-fases', 'color' => '#003b17', 'visible' => true],
         ['id' => 'participacion', 'titulo' => 'Participación ciudadana en el PGOM', 'icono' => 'pgom-manos', 'color' => '#003b17', 'visible' => true],
         ['id' => 'documentos', 'titulo' => 'Documentos del PGOM', 'icono' => 'pgom-documentos', 'color' => '#003b17', 'visible' => true],

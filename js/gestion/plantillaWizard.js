@@ -175,6 +175,7 @@ async function aplicarPlantilla() {
     guardarDatosPaso(paso);
   }
   plantillaPendiente = true;
+  renderizarBotonesParticipacion();
   actualizarEstadoBotonGuardar();
 }
 
@@ -191,7 +192,7 @@ document.getElementById('btnCargarPlantilla')?.addEventListener('click', async f
 
   const resultado = await Swal.fire({
     title: 'Aplicar plantilla',
-    text: 'Se sustituirán los textos de información y participación, la fase, el estado del buzón, las preguntas frecuentes, el diseño y los accesos. Pulsa Guardar para aplicar los cambios y crear los botones de participación si el municipio todavía no tiene ninguno.',
+    text: 'Se sustituirán los textos de información y participación, la fase, el estado del buzón, las preguntas frecuentes, el diseño y los accesos. Si el municipio aún no tiene botones de participación, podrás ver los de la plantilla en ese paso. Pulsa Guardar para aplicar los cambios.',
     icon: 'warning',
     showCancelButton: true,
     confirmButtonText: 'Aplicar plantilla',

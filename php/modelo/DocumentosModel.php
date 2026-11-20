@@ -72,7 +72,7 @@ class DocumentosModel {
             $stmt->execute([$id]);
 
             $this->db->commit();
-            eliminarArchivoMunicipalPGOM($documento['archivo_url'], $documento['cod_mun']);
+            eliminarArchivoMunicipalPGOM($documento['archivo_url'], $documento['cod_mun'], $this->db);
             return true;
         } catch (Exception $e) {
             $this->db->rollBack();

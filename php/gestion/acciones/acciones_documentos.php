@@ -203,7 +203,7 @@ try {
             ]);
 
             if ($archivo_url !== $registro['archivo_url']) {
-                eliminarArchivoMunicipalPGOM($registro['archivo_url'], $registro['cod_mun']);
+                eliminarArchivoMunicipalPGOM($registro['archivo_url'], $registro['cod_mun'], $conn);
             }
             echo json_encode(['success' => true]);
         } catch (PDOException $e) {

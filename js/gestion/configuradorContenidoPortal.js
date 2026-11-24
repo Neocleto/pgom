@@ -334,7 +334,7 @@ function renderContenidoParticipacion() {
         ${crearTarjetaConfiguracion(
             'Botones de participación',
             'Cada botón puede abrir un formulario online, descargar un PDF o mostrar las dos opciones.',
-            `<div class="portal-content-list" data-resource-list>${recursos}</div>
+            `<div id="botonesParticipacionConfigurador" tabindex="-1" class="portal-content-list" data-resource-list>${recursos}</div>
              <button type="button" class="btn btn-outline-primary btn-sm mt-3" data-action="content-new-resource" data-resource-new ${estadoEditorContenido.recursoEditando ? 'hidden' : ''}>
                 <i class="bi bi-plus-circle me-1"></i>Añadir botón de participación
              </button>`

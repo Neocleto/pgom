@@ -41,6 +41,7 @@ const estadoPortal = {
     panelActual: datosInicialesPortal.panel_inicial || 'general',
     cambiosGenerales: false,
     cambiosLocales: false,
+    cambiosFormulario: false,
     hayCambios: false
 };
 
@@ -558,6 +559,13 @@ function gestionarCambioContenido(evento) {
         return;
     }
 
+    if (evento.target.hasAttribute('data-import-form-pdf')) {
+        if (evento.type === 'change') {
+            importarEncuestaDesdePdf(evento.target);
+        }
+        return;
+    }
+
     if (archivoPdfFormulario) {
         // Un selector de archivo dispara input y change. La subida se hace una sola vez.
         if (evento.type === 'change') subirPdfFormularioPortal(evento.target.files[0]);
@@ -624,16 +632,20 @@ function gestionarCambioContenido(evento) {
 
         // Algunos campos cambian los controles visibles del editor.
         const cambiaEstructura = campoFormulario.endsWith('.tipo')
+            || campoFormulario.endsWith('.nivel')
             || campoFormulario === 'modalidad';
 
         if (cambiaEstructura) {
             renderEditorFormulario();
+        } else {
+            actualizarCampoVistaFormulario(campoFormulario, evento.target.value);
         }
 
+        marcarCambios(true, 'formulario');
         return;
     }
 
-    if (opcionesFormulario && estadoPortal.formularioActual) {
+    if (opcionesFormulario && evento.type === 'input' && estadoPortal.formularioActual) {
         const opciones = evento.target.value
             .split('\n')
             .map(function (opcion) {
@@ -642,6 +654,8 @@ function gestionarCambioContenido(evento) {
             .filter(Boolean);
 
         establecerValorRuta(estadoPortal.formularioActual, opcionesFormulario, opciones);
+        actualizarCampoVistaFormulario(opcionesFormulario, evento.target.value);
+        marcarCambios(true, 'formulario');
     }
 }
 
@@ -692,20 +706,14 @@ function ejecutarAccionPanel(boton) {
         return;
     }
 
+    if (accion === 'import-form-pdf') {
+        document.querySelector('[data-import-form-pdf]')?.click();
+        return;
+    }
+
     if (accion === 'new-form') {
         estadoPortal.formularioActual = crearFormularioVacioPortal();
-        renderEditorFormulario();
-        return;
-    }
-
-    if (accion === 'template-child') {
-        estadoPortal.formularioActual = crearPlantillaInfantilPortal();
-        renderEditorFormulario();
-        return;
-    }
-
-    if (accion === 'template-general') {
-        estadoPortal.formularioActual = crearPlantillaGeneralPortal();
+        marcarCambios(true, 'formulario');
         renderEditorFormulario();
         return;
     }
@@ -725,6 +733,7 @@ function ejecutarAccionPanel(boton) {
 
     if (accion === 'cancel-form') {
         estadoPortal.formularioActual = null;
+        marcarCambios(false, 'formulario');
         renderPanelFormularios();
         return;
     }
@@ -745,6 +754,7 @@ function ejecutarAccionPanel(boton) {
             descripcion: '',
             preguntas: []
         });
+        marcarCambios(true, 'formulario');
         renderEditorFormulario();
         return;
     }
@@ -935,6 +945,13 @@ async function guardarConfiguracionPortal() {
             title: 'Hay una edición sin guardar',
             text: 'Guarda o cancela el botón, documento o noticia que estás editando antes de guardar el diseño general.'
         });
+        return;
+    }
+
+    if (estadoPortal.cambiosFormulario) {
+        await Swal.fire('Hay un formulario sin guardar', 'Usa Guardar formulario para aplicar los cambios de la encuesta.', 'info');
+        if (estadoPortal.panelActual !== 'formularios') mostrarPanelConfigurador('formularios');
+        document.querySelector('[data-action="save-form"]')?.focus();
         return;
     }
 
@@ -1586,15 +1603,18 @@ async function solicitarJson(url, opciones = {}) {
 function marcarCambios(hayCambios, tipo = 'general') {
     if (tipo === 'local') {
         estadoPortal.cambiosLocales = hayCambios;
+    } else if (tipo === 'formulario') {
+        estadoPortal.cambiosFormulario = hayCambios;
     } else if (tipo === 'todos') {
         estadoPortal.cambiosGenerales = hayCambios;
         estadoPortal.cambiosLocales = hayCambios;
+        estadoPortal.cambiosFormulario = hayCambios;
     } else {
         estadoPortal.cambiosGenerales = hayCambios;
     }
 
     estadoPortal.hayCambios =
-        estadoPortal.cambiosGenerales || estadoPortal.cambiosLocales;
+        estadoPortal.cambiosGenerales || estadoPortal.cambiosLocales || estadoPortal.cambiosFormulario;
 
     const estado = document.getElementById('estadoGuardadoPortal');
     const texto = estado.querySelector('[data-save-state-text]');

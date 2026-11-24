@@ -80,11 +80,11 @@ BEGIN
             (3, '¿Quién elabora el PGOM?', 'La elaboración corresponde al equipo redactor y a las administraciones que intervienen en el expediente. El Ayuntamiento facilita la información sobre los responsables y el seguimiento del plan.'),
             (4, '¿Cómo puedo conocer las propuestas para mi municipio?', 'Consulta los documentos, las noticias y la información del plan publicados en este portal. Para resolver una duda sobre una propuesta concreta, utiliza los canales de contacto municipales.'),
             (5, '¿Dónde puedo consultar el estado del PGOM?', 'En el apartado Fases se muestra la fase actual y el estado de la tramitación que haya publicado el Ayuntamiento.'),
-            (6, '¿Cómo puede participar la ciudadanía?', 'Puedes consultar los materiales disponibles, responder a las encuestas habilitadas y enviar sugerencias a través del buzón cuando esté activo. Los anuncios oficiales indican los plazos y canales de cada trámite.'),
+            (6, '¿Cómo puede participar la ciudadanía?', 'Puedes consultar los materiales disponibles, responder a las encuestas habilitadas. Los anuncios oficiales indican los plazos y canales de cada trámite.'),
             (7, '¿Dónde se publica la información ambiental del plan?', 'La documentación ambiental disponible se puede consultar en el apartado Documentos, junto al resto de materiales publicados del expediente.'),
             (8, '¿Qué ocurre si el PGOM todavía no está aprobado?', 'Consulta la fase actual y los anuncios municipales para conocer el estado del expediente. Para saber qué planeamiento resulta aplicable a una actuación concreta, solicita información al Ayuntamiento.'),
             (9, '¿Dónde puedo obtener más información sobre el PGOM de mi municipio?', 'En este portal, en la web del Ayuntamiento y a través de los canales de contacto municipales. Consulta también las publicaciones oficiales que se indiquen en el expediente.'),
-            (10, '¿Cómo puedo enviar una consulta o sugerencia?', 'Utiliza el buzón de participación si está habilitado o los canales de atención del Ayuntamiento. Para presentar documentación dentro de un trámite oficial, sigue el procedimiento indicado en su anuncio.');
+            (10, '¿Cómo puedo enviar una consulta o sugerencia?', 'Utiliza los canales de atención del Ayuntamiento. Para presentar documentación dentro de un trámite oficial, sigue el procedimiento indicado en su anuncio.');
     END IF;
 END $$;
 DO $$

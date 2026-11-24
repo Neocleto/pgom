@@ -143,7 +143,7 @@ $municipio['escudo'] = obtenerEscudoMunicipio($codMun, $municipio['escudo'] ?? '
                     </iframe>
                 </div>
 
-                <div id="vistaPreviaFormulario" class="portal-form-live-preview d-none" aria-live="polite">
+                <div id="vistaPreviaFormulario" class="portal-form-live-preview d-none">
                     <!-- La vista previa del formulario se genera mediante JavaScript. -->
                 </div>
             </div>

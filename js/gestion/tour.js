@@ -140,8 +140,7 @@ function paso1_DatosGenerales() {
       <div>
         <div style='padding-bottom:5px;'>
           En esta sección introduces la información básica del municipio que se gestionará dentro del PGOM.
-          Estos datos son esenciales para identificar el municipio, establecer los contactos de referencia
-          y configurar la comunicación con el Buzón de Participación.
+          Estos datos son esenciales para identificar el municipio, establecer los contactos de referencia.
         </div>
 
         <ul style='margin-top:5px;'>
@@ -163,10 +162,6 @@ function paso1_DatosGenerales() {
           <li>
             Puedes marcar si los documentos referentes a la participación
             deben enviarse también al arquitecto responsable.
-          </li>
-          <li>
-            Finalmente, el interruptor <b>Activar/Desactivar Buzón de Participación</b>
-            permite habilitar o pausar temporalmente la recepción de mensajes ciudadanos.
           </li>
         </ul>
       </div>

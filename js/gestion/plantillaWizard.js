@@ -1,8 +1,5 @@
 // Contenido de partida del asistente. Se carga solo al aplicar la plantilla.
 const PLANTILLA_WIZARD = {
-  paso1: {
-    buzon_participacion_activo: '1'
-  },
   paso2: {
     titulo: 'Para qué sirve el Plan General de Ordenación Municipal',
     descripcion: `
@@ -16,7 +13,7 @@ const PLANTILLA_WIZARD = {
   paso3: {
     num_fase: '1',
     codigo_subfase: '1.1',
-    estado_tramitacion: 'Esta fase inicia el proceso de elaboración del PGOM, donde se plantea un plan de participación pública que recoge acciones como encuestas, reuniones vecinales, buzones de sugerencias, sesiones informativas, herramientas digitales y mecanismos de retroalimentación continua.',
+    estado_tramitacion: 'Esta fase inicia el proceso de elaboración del PGOM, donde se plantea un plan de participación pública que recoge acciones como encuestas, reuniones vecinales, sesiones informativas, herramientas digitales y mecanismos de retroalimentación continua.',
     // Fecha de aplicación en el horario local del navegador, no en UTC.
     fecha_inicio: () => {
       const hoy = new Date();
@@ -65,7 +62,7 @@ const PLANTILLA_WIZARD = {
     {
         "id": 6,
         "pregunta": "¿Cómo puede participar la ciudadanía?",
-        "respuesta": "Puedes consultar los materiales disponibles, responder a las encuestas habilitadas y enviar sugerencias a través del buzón cuando esté activo. Los anuncios oficiales indican los plazos y canales de cada trámite."
+        "respuesta": "Puedes consultar los materiales disponibles, responder a las encuestas habilitadas. Los anuncios oficiales indican los plazos y canales de cada trámite."
     },
     {
         "id": 7,
@@ -85,7 +82,7 @@ const PLANTILLA_WIZARD = {
     {
         "id": 10,
         "pregunta": "¿Cómo puedo enviar una consulta o sugerencia?",
-        "respuesta": "Utiliza el buzón de participación si está habilitado o los canales de atención del Ayuntamiento. Para presentar documentación dentro de un trámite oficial, sigue el procedimiento indicado en su anuncio."
+        "respuesta": "Utiliza los canales de atención del Ayuntamiento. Para presentar documentación dentro de un trámite oficial, sigue el procedimiento indicado en su anuncio."
     }
 ]
 };
@@ -157,10 +154,6 @@ async function aplicarPlantilla() {
     document.getElementById('subfase_id')
   );
 
-  // Del paso 1 la plantilla solo define el estado del buzón.
-  document.getElementById('buzon_participacion_activo').checked =
-    PLANTILLA_WIZARD.paso1.buzon_participacion_activo === '1';
-
   escribirCampoPlantilla('titulo', PLANTILLA_WIZARD.paso2.titulo);
   escribirCampoPlantilla('descripcion', PLANTILLA_WIZARD.paso2.descripcion);
 
@@ -171,7 +164,7 @@ async function aplicarPlantilla() {
   escribirCampoPlantilla('descripcion1', PLANTILLA_WIZARD.paso5.descripcion1);
   aplicarPreguntasPlantilla();
 
-  for (const paso of [1, 2, 3, 5, 7]) {
+  for (const paso of [2, 3, 5, 7]) {
     guardarDatosPaso(paso);
   }
   plantillaPendiente = true;
@@ -192,7 +185,7 @@ document.getElementById('btnCargarPlantilla')?.addEventListener('click', async f
 
   const resultado = await Swal.fire({
     title: 'Aplicar plantilla',
-    text: 'Se sustituirán los textos de información y participación, la fase, el estado del buzón, las preguntas frecuentes, el diseño y los accesos. Si el municipio aún no tiene botones de participación, podrás ver los de la plantilla en ese paso. Pulsa Guardar para aplicar los cambios.',
+    text: 'Se sustituirán los textos de información y participación, la fase, las preguntas frecuentes, el diseño y los accesos. Si el municipio aún no tiene botones de participación, podrás editar o quitar los de la plantilla en ese paso. Pulsa Guardar para aplicar los cambios.',
     icon: 'warning',
     showCancelButton: true,
     confirmButtonText: 'Aplicar plantilla',

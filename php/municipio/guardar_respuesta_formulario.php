@@ -67,9 +67,10 @@ try {
 
             $respuestas[] = [
                 'apartado_id' => (int)$seccion['id'],
-                'apartado' => $seccion['titulo'],
+                'apartado' => etiquetaNumeradaEncuesta($seccion, 'titulo'),
                 'pregunta_id' => (int)$pregunta['id'],
-                'pregunta' => $pregunta['enunciado'],
+                'pregunta' => etiquetaNumeradaEncuesta($pregunta, 'enunciado'),
+                'nivel_pregunta' => (int)($pregunta['nivel'] ?? 0),
                 'respuesta' => $valorNormalizado
             ];
         }

@@ -2,6 +2,7 @@
 // JUSTIFICANTE DE PARTICIPACIÓN
 // Este archivo define el aspecto del PDF. guardar_respuesta_formulario.php lo
 // genera una vez y utiliza los mismos bytes para el correo y para la descarga.
+require_once __DIR__ . '/../includes/estructura_encuesta.php';
 require_once __DIR__ . '/../../lib/tfpdf/font/unifont/ttfonts.php';
 require_once __DIR__ . '/../../lib/tfpdf/tfpdf.php';
 
@@ -86,38 +87,54 @@ function crearJustificanteEncuesta(array $formulario, array $municipio, array $r
     $pdf->MultiCell(0, 8, 'Referencia: ' . $referencia . '     ·     ' . $fecha->format('d/m/Y H:i'), 0, 'L', true);
     $pdf->Ln(7);
 
-    // Se respeta el orden de los apartados y se muestra el texto de cada opción marcada.
-    $apartadoAnterior = null;
+    // Se mantienen los encabezados aunque un apartado solo sirva para agrupar otros.
+    $respuestasPorApartado = [];
     foreach ($respuestas as $respuesta) {
-        if ($apartadoAnterior !== $respuesta['apartado_id']) {
-            if ($pdf->GetY() > 241) {
-                $pdf->AddPage();
-            }
-            $pdf->SetTextColor(...$pdf->color);
-            $pdf->SetFont('DejaVu', 'B', 13);
-            $pdf->MultiCell(0, 7, $respuesta['apartado']);
-            $pdf->Ln(2);
-            $apartadoAnterior = $respuesta['apartado_id'];
-        }
+        $respuestasPorApartado[$respuesta['apartado_id']][] = $respuesta;
+    }
 
-        // Deja espacio para la pregunta y la primera línea de su respuesta.
-        if ($pdf->GetY() > 248) {
+    foreach ($formulario['secciones'] as $seccion) {
+        $sangriaApartado = 16 + 5 * (int)($seccion['nivel'] ?? 0);
+        if ($pdf->GetY() > 235) {
             $pdf->AddPage();
         }
-        $pdf->SetTextColor(26, 36, 52);
-        $pdf->SetFont('DejaVu', 'B', 10);
-        $pdf->MultiCell(0, 6, $respuesta['pregunta'], 0, 'L', true);
+        $pdf->SetX($sangriaApartado);
+        $pdf->SetTextColor(...$pdf->color);
+        $pdf->SetFont('DejaVu', 'B', $sangriaApartado === 16 ? 13 : 11);
+        $pdf->MultiCell(0, 7, etiquetaNumeradaEncuesta($seccion, 'titulo'));
+        $pdf->Ln(2);
 
-        $texto = $respuesta['respuesta'];
-        if (is_array($texto)) {
-            $texto = implode("\n", $texto);
+        if (!empty($seccion['descripcion'])) {
+            $pdf->SetX($sangriaApartado);
+            $pdf->SetTextColor(75, 85, 99);
+            $pdf->SetFont('DejaVu', '', 9);
+            $pdf->MultiCell(0, 5, $seccion['descripcion']);
+            $pdf->Ln(2);
         }
-        if ($texto === '' || $texto === null) {
-            $texto = 'Sin respuesta';
+
+        foreach ($respuestasPorApartado[$seccion['id']] ?? [] as $respuesta) {
+            // Deja espacio para la pregunta y la primera línea de su respuesta.
+            if ($pdf->GetY() > 248) {
+                $pdf->AddPage();
+            }
+            $sangriaPregunta = $sangriaApartado + 5 * ($respuesta['nivel_pregunta'] ?? 0);
+            $pdf->SetX($sangriaPregunta);
+            $pdf->SetTextColor(26, 36, 52);
+            $pdf->SetFont('DejaVu', 'B', 10);
+            $pdf->MultiCell(0, 6, $respuesta['pregunta'], 0, 'L', true);
+
+            $texto = $respuesta['respuesta'];
+            if (is_array($texto)) {
+                $texto = $texto ? '• ' . implode("\n• ", $texto) : '';
+            }
+            if ($texto === '' || $texto === null) {
+                $texto = 'Sin respuesta';
+            }
+            $pdf->SetX($sangriaPregunta);
+            $pdf->SetFont('DejaVu', '', 10);
+            $pdf->MultiCell(0, 5.6, (string)$texto, 0, 'L');
+            $pdf->Ln(5);
         }
-        $pdf->SetFont('DejaVu', '', 10);
-        $pdf->MultiCell(0, 5.6, (string)$texto, 0, 'L');
-        $pdf->Ln(5);
     }
 
     // S devuelve el PDF en memoria. Las respuestas no quedan en carpetas públicas.

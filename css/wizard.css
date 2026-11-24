@@ -651,16 +651,6 @@
   border-color: #003b17;
 }
 
-/* Espaciado extra entre los dos bloques de checks */
-.form-check + .form-check {
-  margin-top: 0.25rem;
-}
-
-/* Switch (buzón de participación) */
-.form-switch {
-  margin-top: 0.2rem !important; /* reducimos el espacio extra */
-}
-
 /* Mejora en pantallas pequeñas */
 @media (max-width: 768px) {
   .form-check-label {

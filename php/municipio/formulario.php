@@ -8,6 +8,7 @@ require_once(__DIR__ . '/../db/conexion.php');
 require_once(__DIR__ . '/../modelo/FormularioDinamicoModel.php');
 require_once(__DIR__ . '/../modelo/MunicipioModel.php');
 require_once(__DIR__ . '/../includes/participacion_portal.php');
+require_once __DIR__ . '/../includes/estructura_encuesta.php';
 
 $codMun = $_GET['cod_mun'] ?? '';
 $slug = $_GET['slug'] ?? '';
@@ -46,6 +47,7 @@ if (
     exit('El formulario no está disponible.');
 }
 
+$urlPrivacidad = trim((string)($municipio['politica_privacidad_url'] ?? ''));
 $urlPdf = resolverArchivoParticipacion($formulario['pdf_url'] ?? '', $codMun);
 $urlVolver = 'php/municipio/municipio.php?cod_mun=' . urlencode($codMun);
 if ($esPreview) {
@@ -155,12 +157,18 @@ function escaparAtributo($valor)
             <input type="hidden" name="cod_mun" value="<?= escaparAtributo($codMun) ?>">
 
             <?php foreach ($formulario['secciones'] as $indiceSeccion => $seccion): ?>
-                <section class="form-public-section">
+                <?php
+                $nivelApartado = (int)($seccion['nivel'] ?? 0);
+                $nivelEncabezado = 2 + $nivelApartado;
+                ?>
+                <section class="form-public-section" style="--nivel-encuesta:<?= $nivelApartado ?>">
                     <div class="form-public-section__heading">
-                        <span><?= $indiceSeccion + 1 ?></span>
+                        <?php if (($seccion['numero'] ?? '') !== '' || $nivelApartado === 0): ?>
+                            <span><?= escaparAtributo(($seccion['numero'] ?? '') ?: (string)($indiceSeccion + 1)) ?></span>
+                        <?php endif; ?>
 
                         <div>
-                            <h2><?= escaparAtributo($seccion['titulo']) ?></h2>
+                            <h<?= $nivelEncabezado ?>><?= escaparAtributo($seccion['titulo']) ?></h<?= $nivelEncabezado ?>>
 
                             <?php if (!empty($seccion['descripcion'])): ?>
                                 <p><?= escaparAtributo($seccion['descripcion']) ?></p>
@@ -178,9 +186,9 @@ function escaparAtributo($valor)
                                 : '';
                             ?>
 
-                            <div class="form-public-field <?= $claseAncho ?>">
+                            <div class="form-public-field <?= $claseAncho ?>" style="--nivel-encuesta:<?= (int)($pregunta['nivel'] ?? 0) ?>">
                                 <div id="<?= escaparAtributo($idEtiqueta) ?>" class="form-public-field__label">
-                                    <?= escaparAtributo($pregunta['enunciado']) ?>
+                                    <?= escaparAtributo(etiquetaNumeradaEncuesta($pregunta, 'enunciado')) ?>
 
                                     <?php if (!empty($pregunta['obligatorio'])): ?>
                                         <span aria-label="Campo obligatorio">*</span>
@@ -287,7 +295,12 @@ function escaparAtributo($valor)
             <?php endforeach; ?>
 
             <div class="form-public-actions">
-                <p>Los campos marcados con <strong>*</strong> son obligatorios.</p>
+                <div>
+                    <p>Los campos marcados con <strong>*</strong> son obligatorios.</p>
+                    <?php if (filter_var($urlPrivacidad, FILTER_VALIDATE_URL) && preg_match('~^https?://~i', $urlPrivacidad)): ?>
+                        <p><a href="<?= escaparAtributo($urlPrivacidad) ?>" target="_blank" rel="noopener noreferrer">Política de privacidad</a></p>
+                    <?php endif; ?>
+                </div>
 
                 <button type="submit" id="btnEnviarFormularioPublico">
                     <span class="form-public-submit-text">

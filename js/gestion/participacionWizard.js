@@ -4,6 +4,8 @@
  ***********************************************/
 
 let botonesParticipacionCargados = [];
+let borradorBotonesParticipacion = null; // null: usar la lista guardada; []: plantilla sin botones.
+let siguienteBotonBorrador = 0;
 let participacionUIBound = false;     // evita enganchar listeners múltiples
 let offcanvasCloseBound = false;      // evita enganchar listeners múltiples (delegación)
 
@@ -156,8 +158,7 @@ function bindParticipacionUI() {
     const btnDel  = e.target.closest(".btnEliminarBoton");
 
     if (btnVer) {
-      const url = btnVer.dataset.url;
-      if (url) window.open(url, "_blank");
+      if (btnVer.dataset.url) window.open(btnVer.dataset.url, "_blank", "noopener");
       return;
     }
 
@@ -175,7 +176,9 @@ function bindParticipacionUI() {
 
       Swal.fire({
         title: "¿Eliminar botón?",
-        text: "Esta acción no se puede deshacer.",
+        text: borradorBotonesParticipacion
+          ? "Se quitará del borrador de la plantilla."
+          : "Esta acción no se puede deshacer.",
         icon: "warning",
         showCancelButton: true,
         confirmButtonText: "Sí, eliminar",
@@ -187,7 +190,12 @@ function bindParticipacionUI() {
         buttonsStyling: false,
       }).then((r) => {
         if (!r.isConfirmed) return;
-        eliminarBoton(id, codMunNow);
+        if (borradorBotonesParticipacion) {
+          borradorBotonesParticipacion = borradorBotonesParticipacion.filter(boton => boton.id !== id);
+          renderizarBotonesParticipacion();
+        } else {
+          eliminarBoton(id, codMunNow);
+        }
       });
 
       return;
@@ -215,7 +223,7 @@ function bindParticipacionUI() {
     // Al añadir el documento pendiente, proponemos mostrar el botón. Se puede desmarcar antes de guardar.
     if (e.target.id === "archivo_boton_modal" && e.target.files.length) {
       const id = document.getElementById("boton_id").value;
-      const boton = botonesParticipacionCargados?.find(boton => String(boton.id) === id);
+      const boton = obtenerBotonParticipacion(id);
       if (boton?.documento_pendiente) {
         document.getElementById("visible_boton_modal").checked = true;
       }
@@ -236,13 +244,6 @@ function bindParticipacionUI() {
     }
   });
 
-  // Botón cancelar del panel
-  document.addEventListener("click", (e) => {
-    if (e.target.closest("#btnCancelarBotonPanel")) {
-      e.preventDefault();
-      cerrarPanelParticipacionSeguro();
-    }
-  });
 }
 
 // ============================================================
@@ -250,7 +251,7 @@ function bindParticipacionUI() {
 // ============================================================
 function getCodMunActual() {
   // Preferimos datosWizard si existe
-  const c1 = (window.datosWizard?.[1]?.cod_mun || "").trim();
+  const c1 = (datosWizard[1]?.cod_mun || "").trim();
   if (c1) return c1;
 
   const domCod = (document.getElementById("cod_mun")?.value || "").trim();
@@ -272,7 +273,7 @@ function showSpinnerGuardando(show) {
 function abrirPanelBotonParticipacionNuevo() {
 
   // Si estamos creando y todavía NO se ha guardado nunca -> obligamos a guardar antes
-  if (!modoEdicion && !municipioGuardado) {
+  if (!borradorBotonesParticipacion && !modoEdicion && !municipioGuardado) {
 
     // (Opcional) valida lo que tú quieras antes de guardar
     // Si quieres exigir que el wizard esté válido antes de guardar:
@@ -323,7 +324,7 @@ function abrirPanelBotonParticipacionEditar(id) {
   const panel = getPanelInstance();
   if (!panel) return;
 
-  const boton = botonesParticipacionCargados?.find((b) => String(b.id) === String(id));
+  const boton = obtenerBotonParticipacion(id);
   if (!boton) {
     Swal?.fire?.("Error", "No se encontró el botón a editar.", "error");
     return;
@@ -404,8 +405,10 @@ function setPanelMode({ modo, boton }) {
 
       if (contador) contador.textContent = `${(texto.value || "").length}/50`;
 
-      if (boton.url_documento) {
-        if (previewNombre) previewNombre.textContent = boton.url_documento.split("/").pop();
+      if (boton.archivoSeleccionado || boton.url_documento) {
+        if (previewNombre) {
+          previewNombre.textContent = boton.archivoSeleccionado?.name || boton.url_documento.split("/").pop();
+        }
         preview?.classList.remove("d-none");
       } else if (boton.documento_pendiente && ayuda) {
         ayuda.textContent = boton.documento_no_disponible
@@ -423,6 +426,7 @@ function setPanelMode({ modo, boton }) {
     if (boton?.formulario_id) {
       const opcion = new Option(boton.formulario_titulo || "Encuesta vinculada", boton.formulario_id, true, true);
       opcion.dataset.pdf = boton.formulario_pdf_url || "";
+      opcion.dataset.borrador = boton.formulario_pendiente ? "1" : "0";
       selectorFormulario.add(opcion);
     }
     actualizarCamposBotonParticipacion();
@@ -442,6 +446,13 @@ async function actualizarCamposBotonParticipacion() {
     : "Reutilizar el PDF de una encuesta (opcional)";
   document.getElementById("campoArchivoBoton").classList.toggle("d-none", tipo === "formulario");
   selector.required = esOnline;
+
+  // Las encuestas se vinculan a municipios que ya están guardados.
+  if (!modoEdicion && !municipioGuardado) {
+    selector.replaceChildren(new Option("Guarda el municipio para vincular una encuesta", ""));
+    selector.disabled = true;
+    return;
+  }
 
   selector.disabled = true;
   try {
@@ -464,6 +475,7 @@ async function actualizarCamposBotonParticipacion() {
       const estado = formulario.activo ? "" : " · borrador";
       const opcion = new Option(formulario.titulo + estado, formulario.id);
       opcion.dataset.pdf = formulario.pdf_url || "";
+      opcion.dataset.borrador = formulario.activo ? "0" : "1";
       selector.add(opcion);
     }
     if (seleccionada?.value) {
@@ -533,14 +545,23 @@ function renderizarBotonesParticipacion() {
 
   const cargando = !document.getElementById("spinnerListaBotones").classList.contains("d-none");
   const errorCarga = !cargando && botonesParticipacionCargados === null;
-  // Los botones de la plantilla solo se muestran cuando no hay botones guardados.
-  const vistaPlantilla = !cargando && plantillaPendiente && botonesParticipacionCargados?.length === 0;
-  const botones = vistaPlantilla ? JSON.parse(wrapper.dataset.botonesPlantilla) : (botonesParticipacionCargados || []);
+  // La plantilla solo inicializa un borrador para municipios sin botones.
+  // Un borrador vacío indica que se quitaron todos y no se vuelve a rellenar.
+  if (!cargando && plantillaPendiente && botonesParticipacionCargados?.length === 0
+      && borradorBotonesParticipacion === null) {
+    borradorBotonesParticipacion = JSON.parse(wrapper.dataset.botonesPlantilla).map(boton => ({
+      ...boton,
+      url_documento_comun: boton.url_documento,
+      id: "plantilla-" + siguienteBotonBorrador++
+    }));
+  }
+  const vistaPlantilla = borradorBotonesParticipacion !== null;
+  const botones = borradorBotonesParticipacion ?? botonesParticipacionCargados ?? [];
   const maximo = botones.length >= MAX_BOTONES_GESTION;
   const mostrarLista = !cargando && botones.length > 0;
 
   document.getElementById("btnNuevoBotonParticipacion").disabled = cargando || errorCarga || maximo;
-  document.getElementById("mensajeMaximoBotones").classList.toggle("d-none", cargando || vistaPlantilla || !maximo);
+  document.getElementById("mensajeMaximoBotones").classList.toggle("d-none", cargando || !maximo);
   document.getElementById("mensajeBotonesPlantilla").classList.toggle("d-none", !vistaPlantilla);
   document.getElementById("errorListaBotonesParticipacion").classList.toggle("d-none", !errorCarga);
   document.getElementById("estadoVacioBotones").classList.toggle("d-none", cargando || errorCarga || mostrarLista);
@@ -556,7 +577,7 @@ function renderizarBotonesParticipacion() {
       <div class="list-group list-group-flush">
         ${botones.map((b) => {
           const texto = escapeHtml(b.texto_boton || "");
-          const url = b.url_documento || "";
+          const url = b.archivoSeleccionado ? "" : (b.url_documento || "");
           const pendiente = b.documento_pendiente;
           const icono = escapeHtml(
             b.icono === null || b.icono === undefined
@@ -566,7 +587,7 @@ function renderizarBotonesParticipacion() {
           const color = escapeHtml(b.color || document.getElementById("color_boton_modal").defaultValue);
           const visible = !pendiente && convertirBooleanoParticipacion(b.visible, true);
           let estado = visible ? "Visible en la página pública" : "Oculto temporalmente";
-          if (vistaPlantilla && !pendiente) estado = "Documento disponible";
+          if (vistaPlantilla && visible) estado = b.archivoSeleccionado ? "Se subirá al guardar" : "Disponible al guardar";
           if (b.formulario_pendiente) estado = "Encuesta pendiente de activar";
           if (pendiente) {
             estado = b.documento_no_disponible ? "Documento guardado · archivo no localizado" : "Pendiente de subir el documento";
@@ -592,14 +613,12 @@ function renderizarBotonesParticipacion() {
                   <button type="button" class="btn btn-outline-primary btn-sm btnVerBoton" data-url="${escapeHtml(url)}" title="Ver archivo" ${url ? "" : "disabled"}>
                     <i class="bi bi-eye"></i>
                   </button>
-                  ${vistaPlantilla ? "" : `
-                    <button type="button" class="btn btn-outline-secondary btn-sm btnEditarBoton" data-id="${b.id}" title="Editar">
-                      <i class="bi bi-pencil"></i>
-                    </button>
-                    <button type="button" class="btn btn-outline-danger btn-sm btnEliminarBoton" data-id="${b.id}" title="Eliminar">
-                      <i class="bi bi-trash"></i>
-                    </button>
-                  `}
+                  <button type="button" class="btn btn-outline-secondary btn-sm btnEditarBoton" data-id="${b.id}" title="Editar">
+                    <i class="bi bi-pencil"></i>
+                  </button>
+                  <button type="button" class="btn btn-outline-danger btn-sm btnEliminarBoton" data-id="${b.id}" title="Eliminar">
+                    <i class="bi bi-trash"></i>
+                  </button>
                 </div>
               </div>
             </div>
@@ -650,7 +669,8 @@ async function guardarOActualizarDesdePanel() {
 
   const esEdicion = !!id;
 
-  const duplicado = botonesParticipacionCargados?.some((b) => {
+  const botones = borradorBotonesParticipacion ?? botonesParticipacionCargados ?? [];
+  const duplicado = botones.some((b) => {
     const mismoTexto = (b.texto_boton || "").trim().toLowerCase() === texto.toLowerCase();
     const distintoId = String(b.id) !== String(id);
     return mismoTexto && (esEdicion ? distintoId : true);
@@ -663,6 +683,43 @@ async function guardarOActualizarDesdePanel() {
 
   if (!esEdicion && necesitaDocumento && !archivo && !selectorFormulario.selectedOptions[0]?.dataset.pdf) {
     Swal?.fire?.("Falta el documento", "Selecciona el archivo antes de mostrar el botón.", "warning");
+    return;
+  }
+
+  if (borradorBotonesParticipacion) {
+    const boton = obtenerBotonParticipacion(id);
+    const opcionFormulario = selectorFormulario.selectedOptions[0];
+    const pdfFormulario = opcionFormulario?.dataset.pdf || "";
+    const archivoSeleccionado = necesitaDocumento ? archivo || boton?.archivoSeleccionado : null;
+    if (archivoSeleccionado?.size > 8 * 1024 * 1024) {
+      Swal.fire("Archivo demasiado grande", "Selecciona un archivo de hasta 8 MB.", "warning");
+      return;
+    }
+
+    const urlDocumento = necesitaDocumento ? (boton?.url_documento_comun || pdfFormulario) : "";
+    const datosBoton = {
+      texto_boton: texto,
+      archivo_url: archivoActual,
+      archivoSeleccionado,
+      url_documento: urlDocumento,
+      icono,
+      color,
+      visible,
+      tipo_contenido: tipoContenido,
+      formulario_id: formularioId,
+      formulario_titulo: formularioId ? opcionFormulario.textContent : "",
+      formulario_pdf_url: pdfFormulario,
+      documento_pendiente: necesitaDocumento && !archivoSeleccionado && !urlDocumento,
+      documento_no_disponible: necesitaDocumento && !archivoSeleccionado && !urlDocumento && Boolean(archivoActual),
+      formulario_pendiente: necesitaFormulario && opcionFormulario?.dataset.borrador === "1"
+    };
+    if (boton) {
+      Object.assign(boton, datosBoton);
+    } else {
+      borradorBotonesParticipacion.push({ ...datosBoton, id: "plantilla-" + siguienteBotonBorrador++ });
+    }
+    renderizarBotonesParticipacion();
+    cerrarPanelParticipacionSeguro();
     return;
   }
 
@@ -820,5 +877,37 @@ function eliminarBoton(id, cod_mun) {
 // Validación del paso 5 (mínimo 1 botón)
 // ============================================================
 function participacionTieneBotones() {
-  return (botonesParticipacionCargados?.length || 0) > 0;
+  return (borradorBotonesParticipacion ?? botonesParticipacionCargados ?? []).length > 0;
+}
+
+// El borrador comparte el editor de los botones guardados. Solo cambia cuándo se envía.
+function obtenerBotonParticipacion(id) {
+  const botones = borradorBotonesParticipacion ?? botonesParticipacionCargados ?? [];
+  return botones.find(boton => String(boton.id) === String(id));
+}
+
+function reiniciarBorradorBotonesParticipacion() {
+  borradorBotonesParticipacion = null;
+  siguienteBotonBorrador = 0;
+}
+
+function agregarBorradorBotonesParticipacion(formData) {
+  if (borradorBotonesParticipacion === null) return;
+
+  const botones = borradorBotonesParticipacion.map((boton, indice) => {
+    if (boton.archivoSeleccionado) {
+      formData.append("archivo_boton_plantilla_" + indice, boton.archivoSeleccionado);
+    }
+    return {
+      texto_boton: boton.texto_boton,
+      archivo_url: boton.archivo_url,
+      tiene_archivo: Boolean(boton.archivoSeleccionado),
+      icono: boton.icono,
+      color: boton.color,
+      visible: boton.visible ?? true,
+      tipo_contenido: boton.tipo_contenido ?? "pdf",
+      formulario_id: boton.formulario_id || ""
+    };
+  });
+  formData.append("botones_plantilla", JSON.stringify(botones));
 }

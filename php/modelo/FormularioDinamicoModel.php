@@ -541,9 +541,9 @@ class FormularioDinamicoModel
     private function guardarSecciones($formularioId, array $secciones)
     {
         $sqlSeccion = "INSERT INTO pgom.formulario_secciones
-                            (formulario_id, titulo, descripcion, orden)
+                            (formulario_id, titulo, descripcion, numero, nivel, orden)
                        VALUES
-                            (:formulario_id, :titulo, :descripcion, :orden)
+                            (:formulario_id, :titulo, :descripcion, :numero, :nivel, :orden)
                        RETURNING id";
 
         $sqlPregunta = "INSERT INTO pgom.formulario_preguntas
@@ -555,6 +555,8 @@ class FormularioDinamicoModel
                                 obligatorio,
                                 ancho,
                                 opciones,
+                                numero,
+                                nivel,
                                 orden
                             )
                         VALUES
@@ -566,6 +568,8 @@ class FormularioDinamicoModel
                                 :obligatorio,
                                 :ancho,
                                 CAST(:opciones AS jsonb),
+                                :numero,
+                                :nivel,
                                 :orden
                             )";
 
@@ -583,6 +587,8 @@ class FormularioDinamicoModel
                 ':formulario_id' => $formularioId,
                 ':titulo' => $tituloSeccion,
                 ':descripcion' => trim($seccion['descripcion'] ?? ''),
+                ':numero' => mb_substr(trim((string)($seccion['numero'] ?? '')), 0, 30),
+                ':nivel' => min(2, max(0, (int)($seccion['nivel'] ?? 0))),
                 ':orden' => $indiceSeccion + 1
             ]);
 
@@ -638,6 +644,8 @@ class FormularioDinamicoModel
                     ? 'medio'
                     : 'completo',
                 ':opciones' => json_encode($opciones, JSON_UNESCAPED_UNICODE),
+                ':numero' => mb_substr(trim((string)($pregunta['numero'] ?? '')), 0, 30),
+                ':nivel' => min(2, max(0, (int)($pregunta['nivel'] ?? 0))),
                 ':orden' => $indicePregunta + 1
             ]);
         }

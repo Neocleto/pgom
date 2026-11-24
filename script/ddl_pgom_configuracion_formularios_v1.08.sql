@@ -8,7 +8,6 @@ CREATE TABLE IF NOT EXISTS pgom.configuracion_visual (
     color_participacion VARCHAR(20) NOT NULL DEFAULT '#003b17',
     color_documentos VARCHAR(20) NOT NULL DEFAULT '#003b17',
     color_noticias VARCHAR(20) NOT NULL DEFAULT '#003b17',
-    color_buzon VARCHAR(20) NOT NULL DEFAULT '#003b17',
     ancho_contenido INTEGER NOT NULL DEFAULT 1800,
     escala_texto NUMERIC(4,2) NOT NULL DEFAULT 1.00,
     mostrar_accesos BOOLEAN NOT NULL DEFAULT TRUE,

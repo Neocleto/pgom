@@ -14,6 +14,7 @@ foreach (obtenerBotonesPlantillaParticipacion() as $boton) {
         'texto_boton' => $boton['titulo'],
         'icono' => normalizarIconoPortal($boton['icono']),
         'color' => $boton['color'],
+        'archivo_url' => $archivo,
         'url_documento' => $disponible ? $archivo : '',
         'documento_pendiente' => !$disponible,
     ];
@@ -82,7 +83,7 @@ usort($iconosParticipacion, function ($a, $b) { return strcasecmp($a[1], $b[1]);
     </div>
 
     <p id="mensajeBotonesPlantilla" class="small text-muted d-none mb-2">
-      Pulsa <strong>Guardar</strong> para añadir estos botones y poder editarlos.
+      Puedes editar o quitar estos botones. Los cambios se aplican al pulsar <strong>Guardar</strong> en el asistente.
     </p>
 
     <p id="errorListaBotonesParticipacion" class="small text-danger d-none mb-0" role="status">

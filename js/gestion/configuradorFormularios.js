@@ -1,5 +1,5 @@
 /**
- * Formularios del configurador: listado, edición, plantillas y guardado.
+ * Formularios del configurador: listado, edición, importación y guardado.
  * Depende del estado y los campos comunes de configuradorPortal.js.
  */
 
@@ -50,22 +50,80 @@ function renderPanelFormularios() {
             'Formularios del municipio',
             'Después de guardar una encuesta, vincúlala al botón de participación que quieras usar.',
             `<div class="portal-form-builder-toolbar">
-                <div class="btn-group">
+                <div class="d-flex flex-wrap gap-2">
                     <button type="button" class="btn btn-primary btn-sm" data-action="new-form">
                         <i class="bi bi-plus-circle me-1"></i>Nuevo formulario
                     </button>
-                    <button type="button" class="btn btn-outline-primary btn-sm" data-action="template-child">
-                        Plantilla infantil
+                    <button type="button" class="btn btn-outline-primary btn-sm" data-action="import-form-pdf">
+                        <i class="bi bi-file-earmark-arrow-up me-1" aria-hidden="true"></i>Importar desde PDF
                     </button>
-                    <button type="button" class="btn btn-outline-primary btn-sm" data-action="template-general">
-                        Plantilla general
-                    </button>
+                    <input type="file" data-import-form-pdf hidden accept="application/pdf,.pdf">
                 </div>
             </div>
-            <div class="portal-form-list">${filas || crearVacio('Aún no hay formularios. Crea el primero desde cero o usa una plantilla.')}</div>`
+            <div class="portal-form-list">${filas || crearVacio('Aún no hay formularios.')}</div>`
         )}
     `;
     cambiarModoVistaPrevia(estadoPortal.formularioActual ? 'formulario' : 'portal');
+}
+
+/**
+ * Genera un borrador editable a partir del PDF en el servidor.
+ */
+async function importarEncuestaDesdePdf(selector) {
+    const archivo = selector.files[0];
+    selector.value = '';
+    if (!archivo) {
+        return;
+    }
+
+    const boton = selector.previousElementSibling;
+    if (!boton || boton.disabled) {
+        return;
+    }
+    if (!archivo.size || archivo.size > 8 * 1024 * 1024) {
+        Swal.fire('Revisa el archivo', 'Selecciona un PDF de hasta 8 MB.', 'warning');
+        return;
+    }
+
+    const textoBoton = boton.innerHTML;
+    boton.disabled = true;
+    boton.textContent = 'Leyendo PDF…';
+
+    const datos = new FormData();
+    datos.append('cod_mun', estadoPortal.codMun);
+    datos.append('archivo', archivo);
+
+    try {
+        const resultado = await solicitarJson('php/gestion/formularios_dinamicos/importar_encuesta_pdf.php', {
+            method: 'POST',
+            body: datos
+        });
+
+        // Si el gestor cambió de pantalla, la respuesta no sustituye lo que está editando.
+        if (!boton.isConnected) {
+            return;
+        }
+        const formulario = crearFormularioVacioPortal();
+        formulario.titulo = resultado.borrador.titulo;
+        formulario.descripcion = resultado.borrador.descripcion || '';
+        formulario.secciones = resultado.borrador.secciones;
+        formulario.activo = false;
+        estadoPortal.formularioActual = formulario;
+        marcarCambios(true, 'formulario');
+        renderEditorFormulario();
+
+        const aviso = resultado.ocr ? ' Se ha usado reconocimiento de texto en las páginas escaneadas.' : '';
+        Swal.fire('Borrador de encuesta preparado',
+            'Se han detectado ' + resultado.borrador.total_preguntas + ' preguntas.' + aviso
+            + ' Revisa los enunciados, las opciones y los tipos de respuesta antes de guardarlo.', 'info');
+    } catch (error) {
+        if (boton.isConnected) {
+            Swal.fire('No se pudo importar el PDF', error.message, 'error');
+        }
+    } finally {
+        boton.disabled = false;
+        boton.innerHTML = textoBoton;
+    }
 }
 
 /**
@@ -119,6 +177,7 @@ async function abrirFormularioParaEditar(idFormulario) {
         );
 
         estadoPortal.formularioActual = normalizarFormularioPortal(datos.formulario);
+        marcarCambios(false, 'formulario');
         renderEditorFormulario();
     } catch (error) {
         Swal.fire('No se pudo abrir el formulario', error.message, 'error');
@@ -224,7 +283,7 @@ function renderEditorFormulario() {
            </div>`;
 
     document.getElementById('contenidoPanelConfigurador').innerHTML = `
-        <div class="portal-form-builder-toolbar">
+        <div class="portal-form-builder-toolbar portal-form-builder-toolbar--guardar">
             <button
                 type="button"
                 class="btn btn-outline-secondary btn-sm"
@@ -327,9 +386,9 @@ function crearEditorSeccionFormulario(seccion, indiceSeccion) {
     }).join('');
 
     return `
-        <section class="portal-form-builder-section" data-form-section="${indiceSeccion}">
+        <section class="portal-form-builder-section" data-form-section="${indiceSeccion}" style="--nivel-encuesta:${Number(seccion.nivel) || 0}">
             <div class="portal-repeater-item__heading">
-                <strong>Apartado ${indiceSeccion + 1}</strong>
+                <strong>${Number(seccion.nivel) ? 'Subapartado' : 'Apartado'} · ${escaparHtml(seccion.numero || String(indiceSeccion + 1))}</strong>
                 <span class="portal-repeater-item__actions">
                     <button type="button" class="portal-small-button" data-action="move-form-section-up" data-section="${indiceSeccion}" title="Subir"><i class="bi bi-arrow-up"></i></button>
                     <button type="button" class="portal-small-button" data-action="move-form-section-down" data-section="${indiceSeccion}" title="Bajar"><i class="bi bi-arrow-down"></i></button>
@@ -340,6 +399,10 @@ function crearEditorSeccionFormulario(seccion, indiceSeccion) {
             <div class="portal-config-grid">
                 ${crearCampoTextoFormulario('Título del apartado', `secciones.${indiceSeccion}.titulo`, seccion.titulo || '')}
                 ${crearCampoTextoFormulario('Descripción', `secciones.${indiceSeccion}.descripcion`, seccion.descripcion || '')}
+                ${crearCampoNumeroEncuesta(`secciones.${indiceSeccion}.numero`, seccion.numero)}
+                ${crearCampoSeleccionFormulario('Nivel', `secciones.${indiceSeccion}.nivel`, String(seccion.nivel || 0), [
+                    ['0', 'Apartado principal'], ['1', 'Subapartado'], ['2', 'Subapartado de segundo nivel']
+                ])}
             </div>
 
             <div class="mt-3">
@@ -349,6 +412,8 @@ function crearEditorSeccionFormulario(seccion, indiceSeccion) {
             <button type="button" class="btn btn-outline-primary btn-sm mt-2" data-action="add-form-question" data-section="${indiceSeccion}">
                 <i class="bi bi-plus-circle me-1"></i>Añadir pregunta
             </button>
+            ${Number(seccion.nivel || 0) < 2 ? `<button type="button" class="btn btn-outline-secondary btn-sm mt-2"
+                data-action="add-child-form-section" data-section="${indiceSeccion}">Añadir subapartado</button>` : ''}
         </section>
     `;
 }
@@ -361,9 +426,9 @@ function crearEditorPreguntaFormulario(pregunta, indiceSeccion, indicePregunta) 
     const necesitaOpciones = ['opcion_unica', 'opcion_multiple', 'desplegable'].includes(pregunta.tipo);
 
     return `
-        <article class="portal-form-builder-question" data-form-question="${indicePregunta}">
+        <article class="portal-form-builder-question" data-form-question="${indicePregunta}" style="--nivel-encuesta:${Number(pregunta.nivel) || 0}">
             <div class="portal-repeater-item__heading">
-                <strong>Pregunta ${indicePregunta + 1}</strong>
+                <strong>${Number(pregunta.nivel) ? 'Subpregunta' : 'Pregunta'} · ${escaparHtml(pregunta.numero || String(indicePregunta + 1))}</strong>
                 <span class="portal-repeater-item__actions">
                     <button type="button" class="portal-small-button" data-action="move-form-question-up" data-section="${indiceSeccion}" data-question="${indicePregunta}" title="Subir"><i class="bi bi-arrow-up"></i></button>
                     <button type="button" class="portal-small-button" data-action="move-form-question-down" data-section="${indiceSeccion}" data-question="${indicePregunta}" title="Bajar"><i class="bi bi-arrow-down"></i></button>
@@ -373,6 +438,10 @@ function crearEditorPreguntaFormulario(pregunta, indiceSeccion, indicePregunta) 
 
             <div class="portal-config-grid">
                 ${crearCampoTextoFormulario('Pregunta', `${rutaBase}.enunciado`, pregunta.enunciado || '')}
+                ${crearCampoNumeroEncuesta(`${rutaBase}.numero`, pregunta.numero)}
+                ${crearCampoSeleccionFormulario('Nivel', `${rutaBase}.nivel`, String(pregunta.nivel || 0), [
+                    ['0', 'Pregunta principal'], ['1', 'Subpregunta'], ['2', 'Subpregunta de segundo nivel']
+                ])}
                 ${crearCampoSeleccionFormulario('Tipo de respuesta', `${rutaBase}.tipo`, pregunta.tipo || 'texto', [
                     ['texto', 'Texto corto'],
                     ['texto_largo', 'Texto largo'],
@@ -401,8 +470,17 @@ function crearEditorPreguntaFormulario(pregunta, indiceSeccion, indicePregunta) 
                     </div>
                 </div>
             </div>
+            ${Number(pregunta.nivel || 0) < 2 ? `<button type="button" class="btn btn-outline-secondary btn-sm mt-2"
+                data-action="add-child-form-question" data-section="${indiceSeccion}" data-question="${indicePregunta}">Añadir subpregunta</button>` : ''}
         </article>
     `;
+}
+
+function crearCampoNumeroEncuesta(ruta, numero) {
+    return `<label class="portal-config-field">
+        <span>Numeración (opcional)</span>
+        <input class="form-control" maxlength="30" data-form-field="${ruta}" value="${escaparHtml(numero || '')}" placeholder="Ej. 1.2">
+    </label>`;
 }
 
 /**
@@ -413,22 +491,13 @@ function modificarSeccionFormulario(boton) {
     const indiceSeccion = Number(boton.dataset.section);
     const secciones = estadoPortal.formularioActual.secciones;
 
-    if (accion === 'add-form-section') {
-        return;
+    if (accion === 'add-child-form-section') {
+        insertarHijoEncuesta(secciones, indiceSeccion, { titulo: 'Nuevo subapartado', descripcion: '', preguntas: [] });
+    } else {
+        modificarOrdenEncuesta(secciones, indiceSeccion, accion);
     }
 
-    if (accion === 'remove-form-section') {
-        secciones.splice(indiceSeccion, 1);
-    }
-
-    if (accion === 'move-form-section-up') {
-        moverElemento(secciones, indiceSeccion, -1);
-    }
-
-    if (accion === 'move-form-section-down') {
-        moverElemento(secciones, indiceSeccion, 1);
-    }
-
+    marcarCambios(true, 'formulario');
     renderEditorFormulario();
 }
 
@@ -447,21 +516,59 @@ function modificarPreguntaFormulario(boton) {
 
     if (accion === 'add-form-question') {
         preguntas.push(crearPreguntaVaciaPortal());
+    } else if (accion === 'add-child-form-question') {
+        insertarHijoEncuesta(preguntas, indicePregunta, crearPreguntaVaciaPortal());
+    } else {
+        modificarOrdenEncuesta(preguntas, indicePregunta, accion);
     }
 
-    if (accion === 'remove-form-question') {
-        preguntas.splice(indicePregunta, 1);
-    }
-
-    if (accion === 'move-form-question-up') {
-        moverElemento(preguntas, indicePregunta, -1);
-    }
-
-    if (accion === 'move-form-question-down') {
-        moverElemento(preguntas, indicePregunta, 1);
-    }
-
+    marcarCambios(true, 'formulario');
     renderEditorFormulario();
+}
+
+// Los elementos que siguen con más sangría forman parte del mismo bloque.
+function finBloqueEncuesta(lista, indice) {
+    const nivel = Number(lista[indice].nivel || 0);
+    let fin = indice + 1;
+    while (fin < lista.length && Number(lista[fin].nivel || 0) > nivel) {
+        fin++;
+    }
+    return fin;
+}
+
+function insertarHijoEncuesta(lista, indice, nuevo) {
+    nuevo.nivel = Number(lista[indice].nivel || 0) + 1;
+    lista.splice(finBloqueEncuesta(lista, indice), 0, nuevo);
+}
+
+function modificarOrdenEncuesta(lista, indice, accion) {
+    const nivel = Number(lista[indice].nivel || 0);
+    const fin = finBloqueEncuesta(lista, indice);
+    if (accion.startsWith('remove-')) {
+        // Al quitar un encabezado, sus elementos se conservan un nivel más arriba.
+        for (let hijo = indice + 1; hijo < fin; hijo++) {
+            lista[hijo].nivel = Number(lista[hijo].nivel) - 1;
+        }
+        lista.splice(indice, 1);
+        return;
+    }
+
+    if (accion.endsWith('-down')) {
+        if (fin >= lista.length || Number(lista[fin].nivel || 0) !== nivel) return;
+        const destino = finBloqueEncuesta(lista, fin);
+        const bloque = lista.splice(indice, fin - indice);
+        lista.splice(destino - bloque.length, 0, ...bloque);
+        return;
+    }
+
+    let anterior = indice - 1;
+    while (anterior >= 0 && Number(lista[anterior].nivel || 0) > nivel) {
+        anterior--;
+    }
+    if (anterior >= 0 && Number(lista[anterior].nivel || 0) === nivel) {
+        const bloque = lista.splice(indice, fin - indice);
+        lista.splice(anterior, 0, ...bloque);
+    }
 }
 
 /**
@@ -495,6 +602,7 @@ async function subirPdfFormularioPortal(archivo) {
 
         formulario.pdf_url = resultado.url;
         if (estadoPortal.formularioActual !== formulario) return;
+        marcarCambios(true, 'formulario');
         renderEditorFormulario();
 
         Swal.fire({
@@ -618,6 +726,12 @@ async function guardarFormularioPortal() {
     mostrarGuardadoFormularioPortal(true);
     formulario.guardando = true;
 
+    // Mientras se guarda, las dos vistas quedan bloqueadas para evitar perder cambios.
+    const editor = document.getElementById('contenidoPanelConfigurador');
+    const vista = document.getElementById('vistaPreviaFormulario');
+    editor.inert = true;
+    vista.inert = true;
+
     try {
         const resultado = await solicitarJson(
             `php/gestion/formularios_dinamicos/acciones_formularios.php?accion=guardar&cod_mun=${encodeURIComponent(estadoPortal.codMun)}`,
@@ -645,6 +759,7 @@ async function guardarFormularioPortal() {
 
         if (estadoPortal.formularioActual === formulario) {
             estadoPortal.formularioActual = null;
+            marcarCambios(false, 'formulario');
             renderPanelFormularios();
         }
         renderMenuConfigurador();
@@ -655,16 +770,27 @@ async function guardarFormularioPortal() {
             title: 'Formulario guardado',
             text: 'En Botones de participación puedes elegir la tarjeta y vincular este formulario.',
             confirmButtonText: 'Ir a los botones',
+            heightAuto: false,
+            returnFocus: false,
             showCancelButton: true,
             cancelButtonText: 'Cerrar'
         });
         if (decision.isConfirmed) {
             mostrarPanelConfigurador('seccion:participacion');
+            cambiarModoVistaPrevia('portal');
+            requestAnimationFrame(function () {
+                const lista = document.getElementById('botonesParticipacionConfigurador');
+                if (!lista) return;
+                lista.focus({ preventScroll: true });
+                lista.closest('.portal-config-card').scrollIntoView({ block: 'start', inline: 'nearest', behavior: 'instant' });
+            });
         }
     } catch (error) {
         Swal.fire('No se pudo guardar el formulario', error.message, 'error');
     } finally {
         delete formulario.guardando;
+        editor.inert = false;
+        vista.inert = false;
         if (estadoPortal.formularioActual === formulario) mostrarGuardadoFormularioPortal(false);
     }
 }
@@ -789,132 +915,4 @@ function obtenerTextoModalidad(modalidad) {
     }
 
     return 'Formulario online';
-}
-
-/**
- * Crea una encuesta infantil editable basada en el documento de ejemplo.
- */
-function crearPlantillaInfantilPortal() {
-    const formulario = crearFormularioVacioPortal();
-
-    formulario.titulo = 'Encuesta infantil para el Plan';
-    formulario.descripcion = 'Encuesta anónima para conocer cómo viven y cómo imaginan el futuro del municipio las niñas y los niños.';
-    formulario.icono = 'pgom-encuesta-infantil';
-    formulario.color = estadoPortal.configuracion.color_primario;
-    // La plantilla se puede guardar inmediatamente como formulario online.
-    // El usuario podrá activar la descarga PDF cuando suba el documento.
-    formulario.modalidad = 'online';
-    formulario.secciones = [
-        {
-            titulo: 'Sobre ti',
-            descripcion: 'Datos generales de la persona que participa.',
-            preguntas: [
-                crearPreguntaPlantilla('¿Cuántos años tienes?', 'numero', true),
-                crearPreguntaOpcionesPlantilla(
-                    '¿Vives en el pueblo o vienes de vacaciones?',
-                    'opcion_unica',
-                    ['Vivo en el pueblo', 'Vengo de vacaciones'],
-                    true
-                )
-            ]
-        },
-        {
-            titulo: 'Moverse y jugar',
-            descripcion: 'Movilidad, seguridad y espacios públicos.',
-            preguntas: [
-                crearPreguntaOpcionesPlantilla(
-                    '¿Cómo vas al colegio?',
-                    'opcion_unica',
-                    ['En coche', 'Andando', 'De otra manera']
-                ),
-                crearPreguntaPlantilla('¿Qué cambiarías para que las calles fueran más agradables?', 'texto_largo'),
-                crearPreguntaPlantilla('¿Cómo mejorarías la plaza o el parque?', 'texto_largo')
-            ]
-        },
-        {
-            titulo: 'Lo verde y el paisaje',
-            descripcion: 'Árboles, sombra, campo y futuro del municipio.',
-            preguntas: [
-                crearPreguntaOpcionesPlantilla('¿Al pueblo le faltan zonas de sombra?', 'si_no'),
-                crearPreguntaPlantilla('¿Qué es lo que más te gusta del pueblo?', 'texto_largo'),
-                crearPreguntaPlantilla('Escribe cómo te gustaría que fuera el pueblo.', 'texto_largo')
-            ]
-        }
-    ];
-
-    return formulario;
-}
-
-/**
- * Crea una encuesta general de diagnóstico participativo.
- */
-function crearPlantillaGeneralPortal() {
-    const formulario = crearFormularioVacioPortal();
-
-    formulario.titulo = 'Diagnóstico participativo PGOM';
-    formulario.descripcion = 'Ayúdanos a conocer tus ideas sobre el espacio público, los edificios, las infraestructuras y el paisaje.';
-    formulario.icono = 'pgom-encuesta-participacion';
-    formulario.color = estadoPortal.configuracion.color_primario;
-    // La plantilla se puede guardar inmediatamente como formulario online.
-    // El usuario podrá activar la descarga PDF cuando suba el documento.
-    formulario.modalidad = 'online';
-    formulario.secciones = [
-        {
-            titulo: 'El espacio público',
-            descripcion: 'Calles, plazas, seguridad y accesibilidad.',
-            preguntas: [
-                crearPreguntaPlantilla('¿Qué lugar consideras inseguro y cómo lo mejorarías?', 'texto_largo'),
-                crearPreguntaOpcionesPlantilla(
-                    '¿Qué hace falta en las calles y plazas?',
-                    'opcion_multiple',
-                    ['Arbolado', 'Zonas de sombra', 'Señalización', 'Baños públicos', 'Fuentes de agua', 'Mobiliario accesible']
-                )
-            ]
-        },
-        {
-            titulo: 'Edificios e infraestructuras',
-            descripcion: 'Equipamientos, vivienda, movilidad y servicios.',
-            preguntas: [
-                crearPreguntaOpcionesPlantilla(
-                    '¿Qué equipamientos echas en falta?',
-                    'opcion_multiple',
-                    ['Colegio', 'Museo', 'Pista deportiva', 'Centro de salud', 'Centro de día', 'Tanatorio']
-                ),
-                crearPreguntaPlantilla('¿Qué infraestructuras urbanas se deberían mejorar?', 'texto_largo')
-            ]
-        },
-        {
-            titulo: 'Territorio y paisaje',
-            descripcion: 'Borde urbano, vistas y nuevas actividades.',
-            preguntas: [
-                crearPreguntaPlantilla('¿Qué vistas interesantes se deberían proteger?', 'texto_largo'),
-                crearPreguntaPlantilla('¿Cómo mejorarías un lugar del municipio que no te gusta?', 'texto_largo')
-            ]
-        }
-    ];
-
-    return formulario;
-}
-
-/**
- * Crea una pregunta sencilla para las plantillas predeterminadas.
- */
-function crearPreguntaPlantilla(enunciado, tipo, obligatorio) {
-    return {
-        enunciado: enunciado,
-        ayuda: '',
-        tipo: tipo,
-        obligatorio: Boolean(obligatorio),
-        ancho: 'completo',
-        opciones: []
-    };
-}
-
-/**
- * Crea una pregunta de selección y asigna sus opciones iniciales.
- */
-function crearPreguntaOpcionesPlantilla(enunciado, tipo, opciones, obligatorio) {
-    const pregunta = crearPreguntaPlantilla(enunciado, tipo, obligatorio);
-    pregunta.opciones = opciones || [];
-    return pregunta;
 }

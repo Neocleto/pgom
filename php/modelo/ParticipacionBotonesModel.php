@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../includes/archivos_municipio.php';
 require_once __DIR__ . '/../includes/participacion_portal.php';
+require_once __DIR__ . '/../includes/subida_documentos.php';
 // ============================================================================
 // MODELO: BOTONES DE PARTICIPACION
 //
@@ -77,15 +78,63 @@ class ParticipacionBotonesModel
     }
 
 
-    /** La plantilla de botones solo se usa si el municipio todavía no tiene ninguno. */
-    public function aplicarPlantilla($codMun)
+    /** Guarda los botones iniciales o el borrador editado desde el asistente. */
+    public function aplicarPlantilla($codMun, ?array $borrador = null, array $archivos = [], array &$archivosNuevos = [])
     {
         if ($this->listarBotonesPorMunicipio($codMun)) {
+            if ($borrador !== null) {
+                throw new InvalidArgumentException('Este municipio ya tiene botones guardados. Vuelve a abrir el asistente para editarlos.');
+            }
             return;
         }
 
-        foreach (obtenerBotonesPlantillaParticipacion() as $boton) {
-            $this->crearBoton($codMun, $boton['titulo'], $boton['archivo'], $boton['icono'], $boton['color']);
+        $plantilla = obtenerBotonesPlantillaParticipacion();
+        if ($borrador === null) {
+            foreach ($plantilla as $boton) {
+                $this->crearBoton($codMun, $boton['titulo'], $boton['archivo'], $boton['icono'], $boton['color']);
+            }
+            return;
+        }
+
+        if (!array_is_list($borrador) || count($borrador) > count($plantilla)) {
+            throw new InvalidArgumentException('La plantilla admite hasta cinco botones de participación.');
+        }
+
+        // Solo se aceptan los documentos comunes de la plantilla o archivos de esta petición.
+        $archivosComunes = array_column($plantilla, 'archivo');
+        $titulos = [];
+        foreach ($borrador as $indice => $boton) {
+            if (!is_array($boton)) {
+                throw new InvalidArgumentException('Los datos de un botón de la plantilla no son válidos.');
+            }
+            $texto = trim((string)($boton['texto_boton'] ?? ''));
+            $titulo = mb_strtolower($texto);
+            if ($texto === '' || mb_strlen($texto) > 50 || isset($titulos[$titulo])) {
+                throw new InvalidArgumentException('Cada botón necesita un texto distinto de hasta 50 caracteres.');
+            }
+            $titulos[$titulo] = true;
+
+            $ruta = trim((string)($boton['archivo_url'] ?? ''));
+            if (!in_array($ruta, $archivosComunes, true)) {
+                throw new InvalidArgumentException('El documento del botón debe ser de la plantilla o subirse desde el asistente.');
+            }
+
+            if (!empty($boton['tiene_archivo'])) {
+                $archivo = $archivos['archivo_boton_plantilla_' . $indice] ?? [];
+                $ruta = guardarDocumentoMunicipio($archivo, $codMun, 'participacion');
+                $archivosNuevos[] = $ruta;
+            }
+
+            $this->crearBoton(
+                $codMun,
+                $texto,
+                $ruta,
+                $boton['icono'] ?? 'file-earmark-arrow-down',
+                $boton['color'] ?? $plantilla[0]['color'],
+                $boton['tipo_contenido'] ?? 'pdf',
+                $boton['formulario_id'] ?? null,
+                $boton['visible'] ?? true
+            );
         }
     }
 

@@ -2,9 +2,7 @@
 // ============================================================================
 // CORREO DE PARTICIPACION PGOM
 //
-// Reutiliza la misma configuracion de correo para:
-// - Mensajes enviados desde el buzon.
-// - Respuestas recibidas desde formularios y encuestas.
+// Envía las respuestas de las encuestas al gestor y, si procede, al arquitecto.
 // ============================================================================
 
 use PHPMailer\PHPMailer\PHPMailer;
@@ -27,42 +25,6 @@ function booleanoCorreoParticipacion($valor)
         ['1', 't', 'true', 'yes', 'si', 'sí'],
         true
     );
-}
-
-/**
- * Recupera el municipio y los destinatarios de participacion.
- */
-function obtenerDatosCorreoParticipacion($conn, $codMun)
-{
-    $sql = "SELECT
-                cod_mun,
-                nombre,
-                correo_contacto_gestor,
-                correo_contacto,
-                COALESCE(enviar_docs_a_arquitecto, FALSE) AS enviar_docs_a_arquitecto,
-                COALESCE(buzon_participacion_activo, TRUE) AS buzon_participacion_activo
-            FROM pgom.municipios
-            WHERE cod_mun = :cod_mun
-              AND activo = TRUE AND baja = FALSE";
-
-    $stmt = $conn->prepare($sql);
-    $stmt->execute([
-        ':cod_mun' => $codMun
-    ]);
-
-    $municipio = $stmt->fetch(PDO::FETCH_ASSOC);
-
-    if (!$municipio) {
-        throw new Exception('Municipio no encontrado.');
-    }
-
-    $correoGestor = trim((string)($municipio['correo_contacto_gestor'] ?? ''));
-
-    if (!filter_var($correoGestor, FILTER_VALIDATE_EMAIL)) {
-        throw new Exception('El municipio no tiene un correo de gestor válido.');
-    }
-
-    return $municipio;
 }
 
 /**

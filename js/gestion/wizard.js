@@ -34,6 +34,7 @@ const modalWizard = new bootstrap.Modal(modalElement);            // Instancia B
 
 modalElement.addEventListener('hidden.bs.modal', () => {
     plantillaPendiente = false;
+    reiniciarBorradorBotonesParticipacion();
     currentStep = 1;
     cargandoEdicion = false;
     estadoInicialWizard = {};
@@ -234,9 +235,11 @@ function guardarDatosPaso(step) {
         // Normaliza checks a '1' / '0' 
         /* Si no se normaliza, FormData enviará el checkbox como "on" cuando está marcado y no enviará nada cuando está desmarcado */
         const cbArquitecto = document.getElementById('enviar_docs_a_arquitecto');
-        const cbBuzon      = document.getElementById('buzon_participacion_activo');
         datosWizard[1].enviar_docs_a_arquitecto   = cbArquitecto?.checked ? '1' : '0';
-        datosWizard[1].buzon_participacion_activo = cbBuzon?.checked ? '1' : '0';
+
+        // Un interruptor desmarcado también se envía para guardar el cierre del buzón.
+        const buzon = document.getElementById('buzon_participacion_activo');
+        if (buzon) datosWizard[1].buzon_participacion_activo = buzon.checked ? '1' : '0';
     }
 
 }
@@ -814,6 +817,7 @@ function generarFormDataDesdeWizard() {
     // generales y los accesos iniciales del portal.
     if (plantillaPendiente) {
         formData.append("aplicar_plantilla_portal", "1");
+        agregarBorradorBotonesParticipacion(formData);
     }
 
     // En modo edición, también enviamos explícitamente el código del municipio
@@ -1109,13 +1113,8 @@ async function editarMunicipio(codMun) {
                 );
             }
 
-            // Check “buzon_participacion_activo”
-            const cbBuzon = document.getElementById('buzon_participacion_activo');
-            if (cbBuzon) {
-                cbBuzon.checked = convertirBooleanoWizard(
-                    mun.buzon_participacion_activo
-                );
-            }
+            const buzon = document.getElementById('buzon_participacion_activo');
+            if (buzon) buzon.checked = convertirBooleanoWizard(mun.buzon_participacion_activo);
 
             guardarDatosPaso(1); // Guardamos en datosWizard
             estadoInicialWizard[1] = { ...datosWizard[1] }; // Clonamos como estado inicial
@@ -1610,6 +1609,7 @@ function refrescarFotoInicial() {
   // Tras guardar la plantilla, sustituimos la vista provisional por los botones guardados.
   const plantillaGuardada = plantillaPendiente;
   plantillaPendiente = false;
+  reiniciarBorradorBotonesParticipacion();
   // 1) Regenerar datosWizard de TODOS los pasos desde el DOM
   for (let p = 1; p <= totalSteps; p++) {
     guardarDatosPaso(p);

@@ -167,7 +167,7 @@ class MunicipioModel
                     :imagen_cabecera,
                     :url_escudo,
                     :enviar_docs_a_arquitecto,
-                    :buzon_participacion_activo
+                    CAST(:buzon_participacion_activo AS boolean)
                 )";
 
         $stmt = $this->conn->prepare($sql);
@@ -182,7 +182,7 @@ class MunicipioModel
             ':imagen_cabecera' => $datos['imagen_cabecera'] ?? null,
             ':url_escudo' => $datos['url_escudo'] ?? null,
             ':enviar_docs_a_arquitecto' => !empty($datos['enviar_docs_a_arquitecto']) ? 1 : 0,
-            ':buzon_participacion_activo' => !empty($datos['buzon_participacion_activo']) ? 1 : 0
+            ':buzon_participacion_activo' => filter_var($datos['buzon_participacion_activo'] ?? false, FILTER_VALIDATE_BOOLEAN) ? 'true' : 'false'
         ]);
     }
 
@@ -207,7 +207,7 @@ class MunicipioModel
                     correo_contacto_gestor = :correo_contacto_gestor,
                     politica_privacidad_url = :politica_privacidad_url,
                     enviar_docs_a_arquitecto = :enviar_docs_a_arquitecto,
-                    buzon_participacion_activo = :buzon_participacion_activo,
+                    buzon_participacion_activo = COALESCE(CAST(:buzon_participacion_activo AS boolean), buzon_participacion_activo),
                     fecha_modificacion = NOW()
                 WHERE cod_mun = :cod_mun";
 
@@ -221,7 +221,10 @@ class MunicipioModel
             ':correo_contacto_gestor' => $datos['correo_contacto_gestor'] ?? '',
             ':politica_privacidad_url' => $datos['politica_privacidad_url'] ?? '',
             ':enviar_docs_a_arquitecto' => !empty($datos['enviar_docs_a_arquitecto']) ? 1 : 0,
-            ':buzon_participacion_activo' => !empty($datos['buzon_participacion_activo']) ? 1 : 0,
+            // Si el paso no envía el interruptor, conservamos la preferencia guardada.
+            ':buzon_participacion_activo' => isset($datos['buzon_participacion_activo'])
+                ? (filter_var($datos['buzon_participacion_activo'], FILTER_VALIDATE_BOOLEAN) ? 'true' : 'false')
+                : null,
             ':cod_mun' => $codMun
         ]);
     }
@@ -253,7 +256,7 @@ class MunicipioModel
     public function actualizarDatosPublicosPortal($codMun, $politicaPrivacidadUrl, $buzonActivo)
     {
         $sql = "UPDATE pgom.municipios
-                SET politica_privacidad_url = :politica_privacidad_url,
+                SET politica_privacidad_url = COALESCE(:politica_privacidad_url, politica_privacidad_url),
                     buzon_participacion_activo = CAST(:buzon_activo AS integer)::boolean,
                     fecha_modificacion = NOW()
                 WHERE cod_mun = :cod_mun
@@ -262,7 +265,7 @@ class MunicipioModel
         $stmt = $this->conn->prepare($sql);
 
         return $stmt->execute([
-            ':politica_privacidad_url' => trim((string)$politicaPrivacidadUrl),
+            ':politica_privacidad_url' => $politicaPrivacidadUrl === null ? null : trim((string)$politicaPrivacidadUrl),
             ':buzon_activo' => !empty($buzonActivo) ? 1 : 0,
             ':cod_mun' => $codMun
         ]);
@@ -297,6 +300,13 @@ class MunicipioModel
         $stmt = $this->conn->prepare($sql);
 
         return $stmt->execute([':cod_mun' => $codMun]);
+    }
+
+    /** Serializa la aplicación de la plantilla al mismo municipio. */
+    public function bloquearMunicipioParaPlantilla($codMun)
+    {
+        $stmt = $this->conn->prepare('SELECT cod_mun FROM pgom.municipios WHERE cod_mun = :cod_mun FOR UPDATE');
+        $stmt->execute([':cod_mun' => $codMun]);
     }
 
     /**

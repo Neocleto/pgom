@@ -16,7 +16,7 @@
                         <span class="portal-phase-guide__number">1</span>
                         <div>
                             <h6>Participación ciudadana</h6>
-                            <p>Esta fase inicia el proceso de elaboración del PGOM, incluyendo los objetivos, plazos, actores implicados y formas de participación. Se define la metodología de trabajo interdisciplinar entre los técnicos redactores, los responsables políticos y los ciudadanos. Además, se plantea un plan específico de participación pública que recoge acciones como encuestas, reuniones vecinales, buzones de sugerencias, sesiones informativas, herramientas digitales y mecanismos de retroalimentación continua.</p>
+                            <p>Esta fase inicia el proceso de elaboración del PGOM, incluyendo los objetivos, plazos, actores implicados y formas de participación. Se define la metodología de trabajo interdisciplinar entre los técnicos redactores, los responsables políticos y los ciudadanos. Además, se plantea un plan específico de participación pública que recoge acciones como encuestas, reuniones vecinales, sesiones informativas, herramientas digitales y mecanismos de retroalimentación continua.</p>
                         </div>
                     </article>
 

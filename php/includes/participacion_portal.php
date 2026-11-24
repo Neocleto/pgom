@@ -6,7 +6,7 @@ function obtenerColoresParticipacion(): array
 {
     return [
         'corporativo' => obtenerConfiguracionInicialPortal()['color_participacion'],
-        'naranja' => '#b54d00',
+        'naranja' => '#ea780f',
     ];
 }
 

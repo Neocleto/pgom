@@ -1,4 +1,4 @@
-@import url("iconos-portal.css?v=encuestas-contorno");
+@import url("iconos-portal.css?v=buzon-original");
 /* ========================================================================== */
 /* CONFIGURADOR VISUAL DEL PORTAL PGOM                                        */
 /*                                                                            */
@@ -1202,8 +1202,7 @@ textarea {
 }
 
 .portal-form-preview-section legend {
-    display: grid;
-    grid-template-columns: 34px minmax(0, 1fr);
+    display: flex;
     gap: 11px;
     align-items: start;
     width: 100%;
@@ -1917,4 +1916,120 @@ body.portal-builder-page {
 .portal-form-preview-actions button:not(:disabled) {
     opacity: 1;
     cursor: pointer;
+}
+
+.portal-form-builder-section,
+.portal-form-builder-question,
+.portal-form-preview-section,
+.portal-form-preview-question {
+    margin-inline-start: calc(var(--nivel-encuesta, 0) * 0.65rem);
+}
+.portal-form-preview-section legend > span {
+    width: auto;
+    flex: 0 1 auto;
+    overflow-wrap: anywhere;
+    border-radius: 9px;
+    min-width: 1.9rem;
+    padding-inline: 0.35rem;
+}
+
+/* El guardado sigue a mano después de navegar a una pregunta. */
+.portal-form-builder-toolbar--guardar {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    padding-block: 8px;
+    background: #fff;
+}
+
+/* Edición de textos en la vista previa y campo vinculado del lateral. */
+.portal-form-campo-vinculado {
+    outline: 2px solid var(--pgom-editor-primary);
+    outline-offset: 4px;
+    border-radius: 5px;
+}
+
+.portal-form-edicion__boton {
+    display: inline;
+    max-width: 100%;
+    padding: 0;
+    border: 0;
+    border-radius: 4px;
+    color: inherit;
+    background: transparent;
+    text-align: start;
+    font: inherit;
+    overflow-wrap: anywhere;
+}
+
+.portal-form-edicion__boton .bi {
+    margin-inline-start: 3px;
+    color: var(--form-preview-color);
+    font-size: .8em;
+}
+
+.portal-form-edicion__boton:hover,
+.portal-form-edicion__boton:focus-visible {
+    color: var(--form-preview-color);
+    text-decoration: underline;
+}
+
+.portal-form-edicion [hidden] {
+    display: none;
+}
+
+.portal-form-preview-question > .portal-form-edicion {
+    align-self: start;
+    max-width: 100%;
+    margin-top: 8px;
+    color: var(--form-preview-color);
+}
+
+.portal-form-preview-question > .portal-form-edicion:has([data-editor-vista]) {
+    align-self: stretch;
+}
+
+.portal-form-edicion__editor {
+    display: block;
+    margin-block: 3px 6px;
+    font-size: .85rem;
+    font-weight: 400;
+}
+
+.portal-form-edicion__editor [data-valor-vista] {
+    display: block;
+    width: 100%;
+    margin: 0;
+    padding: 7px 9px;
+    border: 1px solid var(--form-preview-color);
+    border-radius: 6px;
+    color: #27364d;
+    background: #fff;
+    font: inherit;
+    resize: vertical;
+}
+
+.portal-form-edicion__acciones {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 4px 10px;
+    align-items: center;
+    margin-block-start: 5px;
+}
+
+.portal-form-edicion__acciones button {
+    margin-inline-start: auto;
+    padding: 3px 9px;
+    border: 1px solid var(--form-preview-color);
+    border-radius: 5px;
+    color: var(--form-preview-color);
+    background: #fff;
+    font: inherit;
+}
+
+/* Las ayudas vacías se pueden añadir desde el lateral. */
+.portal-form-preview-question > small:has([data-texto-vista][hidden]),
+.portal-form-preview-section legend small:has([data-texto-vista][hidden]) {
+    display: none;
 }

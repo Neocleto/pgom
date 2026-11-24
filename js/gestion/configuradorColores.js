@@ -8,7 +8,7 @@ const coloresHabitualesPortal = [
     ['#003b17', 'Verde corporativo PGOM'], ['#0f4593', 'Azul'],
     ['#0891b2', 'Turquesa'], ['#16835b', 'Verde'],
     ['#65a30d', 'Verde claro'], ['#d69e00', 'Amarillo'],
-    ['#b54d00', 'Naranja de participación'], ['#ea780f', 'Naranja'], ['#dc403b', 'Rojo'],
+    ['#b54d00', 'Naranja oscuro'], ['#ea780f', 'Naranja de participación'], ['#dc403b', 'Rojo'],
     ['#c84985', 'Rosa'], ['#8056b3', 'Violeta'],
     ['#64748b', 'Gris'], ['#263247', 'Oscuro'], ['#ffffff', 'Blanco']
 ];

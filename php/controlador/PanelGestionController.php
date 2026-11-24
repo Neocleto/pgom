@@ -245,7 +245,8 @@ class PanelGestionController {
     // =====================
     // CREAR NUEVO MUNICIPIO
     // =====================
-    public function crearMunicipioCompleto($datos, bool $aplicarPlantilla = false) {
+    public function crearMunicipioCompleto($datos, bool $aplicarPlantilla = false, ?array $botonesPlantilla = null, array $archivos = []) {
+        $archivosNuevos = [];
         $this->conn->beginTransaction();
 
         try {
@@ -318,7 +319,7 @@ class PanelGestionController {
 
             // Los botones iniciales se guardan junto con el municipio y la plantilla.
             if ($aplicarPlantilla) {
-                $this->participacionBotonesModel->aplicarPlantilla($cod_mun);
+                $this->participacionBotonesModel->aplicarPlantilla($cod_mun, $botonesPlantilla, $archivos, $archivosNuevos);
             }
 
             // Paso 6: Se gestiona desde accione_noticias y noticiasWizard.js (No se guardan con el boton GUARDAR generico sino con el suyo propio)
@@ -336,6 +337,7 @@ class PanelGestionController {
 
         } catch (Throwable $e) {
             $this->conn->rollBack();
+            $this->retirarArchivosPlantilla($archivosNuevos);
             error_log("Error al crear municipio completo: " . $e->getMessage());
             return $e->getMessage(); // Devuelve el mensaje de error para el frontend
         }
@@ -344,13 +346,18 @@ class PanelGestionController {
     // =====================
     // EDITAR MUNICIPIO (solo pasos modificados)
     // =====================
-    public function editarMunicipio($pasosModificados, $datos, $cod_mun, bool $aplicarPlantilla = false) {
+    public function editarMunicipio($pasosModificados, $datos, $cod_mun, bool $aplicarPlantilla = false, ?array $botonesPlantilla = null, array $archivos = []) {
+        $archivosNuevos = [];
         $this->conn->beginTransaction();
 
         try {
             // El código validado llega desde la acción, sin leer variables del request.
             if (!$cod_mun) {
                 throw new Exception("No se pudo determinar el código del municipio para editar.");
+            }
+
+            if ($aplicarPlantilla) {
+                $this->municipioModel->bloquearMunicipioParaPlantilla($cod_mun);
             }
 
             // Paso 1: actualizar municipio si fue modificado
@@ -399,7 +406,7 @@ class PanelGestionController {
 
             // Los botones iniciales se guardan junto con el municipio y la plantilla.
             if ($aplicarPlantilla) {
-                $this->participacionBotonesModel->aplicarPlantilla($cod_mun);
+                $this->participacionBotonesModel->aplicarPlantilla($cod_mun, $botonesPlantilla, $archivos, $archivosNuevos);
             }
 
             // Los documentos y las noticias se guardan desde sus propios pasos.
@@ -417,8 +424,23 @@ class PanelGestionController {
 
         } catch (Throwable $e) {
             $this->conn->rollBack();
+            $this->retirarArchivosPlantilla($archivosNuevos);
+            if ($e instanceof InvalidArgumentException) {
+                throw $e;
+            }
             error_log("Error al editar municipio: " . $e->getMessage());
             return false;
+        }
+    }
+
+    // Si falla la transacción, retiramos solo los documentos subidos en ese intento.
+    private function retirarArchivosPlantilla(array $archivosNuevos)
+    {
+        foreach ($archivosNuevos as $ruta) {
+            $archivo = dirname(__DIR__, 2) . '/' . $ruta;
+            if (is_file($archivo) && !unlink($archivo)) {
+                error_log('No se pudo retirar el archivo de una plantilla sin guardar: ' . $ruta);
+            }
         }
     }
 

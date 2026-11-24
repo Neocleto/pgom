@@ -125,7 +125,9 @@ try {
             ? $datos['datos_contenido']
             : [];
         $buzonActivo = normalizarBooleanoConfigurador(
-            $datosContenido['buzon_activo'] ?? false
+            $datosContenido['buzon_activo']
+                ?? $municipioModel->obtenerMunicipioPorCodigo($codMun)['buzon_participacion_activo']
+                ?? false
         );
 
         // Antes de iniciar la transacción dejamos un único valor para el Buzón.
@@ -185,7 +187,7 @@ try {
         // 4.4. Guardamos buzon, privacidad e imagenes municipales.
         $municipioModel->actualizarDatosPublicosPortal(
             $codMun,
-            $datosContenido['politica_privacidad_url'] ?? '',
+            $datosContenido['politica_privacidad_url'] ?? null,
             $buzonActivo
         );
 

@@ -24,7 +24,6 @@
 .bi.bi-pgom-manos { --pgom-icono-mascara: url("../images/iconos/participacion-mascara.svg"); }
 .bi.bi-pgom-documentos { --pgom-icono-mascara: url("../images/iconos/documentos.svg"); }
 .bi.bi-pgom-noticias { --pgom-icono-mascara: url("../images/iconos/noticias-mascara.svg"); }
-.bi.bi-pgom-buzon { --pgom-icono-mascara: url("../images/iconos/original-buzon.svg"); }
 
 /* El dibujo tiene fondo transparente y toma el color del icono del portal. */
 .bi.bi-pgom-encuesta-infantil::before,
@@ -39,3 +38,5 @@
 }
 .bi.bi-pgom-encuesta-infantil { --icono-encuesta: url("../images/iconos/encuesta-infantil-contorno.svg"); }
 .bi.bi-pgom-encuesta-participacion { --icono-encuesta: url("../images/iconos/encuesta-participacion-contorno.svg"); }
+
+.bi.bi-pgom-buzon { --pgom-icono-mascara: url("../images/iconos/original-buzon.svg"); }

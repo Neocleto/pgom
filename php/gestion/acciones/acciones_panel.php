@@ -17,6 +17,15 @@ exigirAccesoProyecto(!$soloLectura);
 
 header('Content-Type: application/json; charset=utf-8');
 
+// Si se supera el tamaño de la petición, PHP descarta todos los campos.
+require_once __DIR__ . '/../../includes/subida_documentos.php';
+$limitePost = iniBytes(ini_get('post_max_size') ?: '0');
+if ($limitePost > 0 && (int)($_SERVER['CONTENT_LENGTH'] ?? 0) > $limitePost && empty($_POST)) {
+    http_response_code(413);
+    echo json_encode(['success' => false, 'message' => 'Los documentos superan el tamaño que admite una sola petición. Reduce su tamaño o sube alguno después de guardar el municipio.']);
+    exit;
+}
+
 $usuario_id = $_SESSION['usuario_id'] ?? null;
 $usuario_correo = $_SESSION['usuario_correo'] ?? '';
 
@@ -188,6 +197,13 @@ try {
 
     // La misma marca solicita sustituir el diseño y los accesos de la plantilla.
     $aplicarPlantilla = ($_POST['aplicar_plantilla_portal'] ?? '') === '1';
+    $botonesPlantilla = null;
+    if ($aplicarPlantilla && isset($_POST['botones_plantilla'])) {
+        $botonesPlantilla = json_decode((string)$_POST['botones_plantilla'], true);
+        if (!is_array($botonesPlantilla)) {
+            throw new InvalidArgumentException('No se pudieron leer los botones de la plantilla.');
+        }
+    }
 
     // ==============================================
     // CREAR MUNICIPIO COMPLETO (TODOS LOS PASOS)
@@ -204,7 +220,7 @@ try {
         }
 
         $datos['paso1']['usuario_id'] = $usuario_id;
-        $resultado = $controller->crearMunicipioCompleto($datos, $aplicarPlantilla);
+        $resultado = $controller->crearMunicipioCompleto($datos, $aplicarPlantilla, $botonesPlantilla, $_FILES);
 
         if ($resultado === true) {
             echo json_encode(['success' => true, 'message' => 'Municipio creado con éxito']);
@@ -246,7 +262,7 @@ try {
             exit;
         }
 
-        $exito = $controller->editarMunicipio($pasosModificados, $datos, $cod_mun, $aplicarPlantilla);
+        $exito = $controller->editarMunicipio($pasosModificados, $datos, $cod_mun, $aplicarPlantilla, $botonesPlantilla, $_FILES);
 
         echo json_encode([
             'success' => $exito,

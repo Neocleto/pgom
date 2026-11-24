@@ -1,8 +1,7 @@
---###########  MODIFICACIONES PARA DESACTIVAR BUZON Y ENVIAR CORREO A GESTOR Y ARQUITECTO ########### 
+--###########  MODIFICACIONES PARA ENVIAR CORREO A GESTOR Y ARQUITECTO ########### 
 ALTER TABLE pgom.municipios
   ADD COLUMN correo_contacto_gestor VARCHAR(100),
-  ADD COLUMN enviar_docs_a_arquitecto BOOLEAN DEFAULT false,
-  ADD COLUMN buzon_participacion_activo BOOLEAN DEFAULT false;
+  ADD COLUMN enviar_docs_a_arquitecto BOOLEAN DEFAULT false;
 
 
 --###########  MODIFICACIONES PARA HACER DRAG AND DROP EN FAQS ########### 

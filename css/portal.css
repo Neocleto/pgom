@@ -1275,12 +1275,7 @@ body.portal-page {
 }
 .portal-page .portal-mailbox__intro { position: relative; min-width: 0; }
 .portal-page .portal-mailbox__intro .portal-section__heading { margin-bottom: 12px; }
-/* El antetítulo del buzón conserva las medidas del diseño original. */
-.portal-page .portal-mailbox .section-kicker {
-    font-size: .7rem;
-    line-height: inherit;
-    letter-spacing: .09em;
-}
+
 .portal-page .portal-mailbox__intro > .portal-rich-text { margin-left: 70px; }
 .portal-page .portal-mailbox__form {
     position: relative;

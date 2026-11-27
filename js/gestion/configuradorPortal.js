@@ -549,28 +549,15 @@ function gestionarClickContenido(evento) {
  */
 function gestionarCambioContenido(evento) {
     const campoGeneral = evento.target.dataset.field;
-    const campoFormulario = evento.target.dataset.formField;
-    const opcionesFormulario = evento.target.dataset.formOptions;
     const archivo = evento.target.dataset.uploadInput;
-    const archivoPdfFormulario = evento.target.hasAttribute('data-form-pdf-input');
 
     if (archivo) {
         subirImagenPortal(archivo, evento.target.files[0]);
         return;
     }
 
-    if (evento.target.hasAttribute('data-import-form-pdf')) {
-        if (evento.type === 'change') {
-            importarEncuestaDesdePdf(evento.target);
-        }
-        return;
-    }
-
-    if (archivoPdfFormulario) {
-        // Un selector de archivo dispara input y change. La subida se hace una sola vez.
-        if (evento.type === 'change') subirPdfFormularioPortal(evento.target.files[0]);
-        return;
-    }
+    // El editor de encuestas interpreta sus propios campos y rutas.
+    if (gestionarCambioFormulario(evento)) return;
 
     if (campoGeneral) {
         if (evento.target.matches('.portal-color-field input.form-control')
@@ -622,41 +609,6 @@ function gestionarCambioContenido(evento) {
         programarVistaPrevia();
         return;
     }
-
-    if (campoFormulario && estadoPortal.formularioActual) {
-        establecerValorRuta(
-            estadoPortal.formularioActual,
-            campoFormulario,
-            obtenerValorCampo(evento.target)
-        );
-
-        // Algunos campos cambian los controles visibles del editor.
-        const cambiaEstructura = campoFormulario.endsWith('.tipo')
-            || campoFormulario.endsWith('.nivel')
-            || campoFormulario === 'modalidad';
-
-        if (cambiaEstructura) {
-            renderEditorFormulario();
-        } else {
-            actualizarCampoVistaFormulario(campoFormulario, evento.target.value);
-        }
-
-        marcarCambios(true, 'formulario');
-        return;
-    }
-
-    if (opcionesFormulario && evento.type === 'input' && estadoPortal.formularioActual) {
-        const opciones = evento.target.value
-            .split('\n')
-            .map(function (opcion) {
-                return opcion.trim();
-            })
-            .filter(Boolean);
-
-        establecerValorRuta(estadoPortal.formularioActual, opcionesFormulario, opciones);
-        actualizarCampoVistaFormulario(opcionesFormulario, evento.target.value);
-        marcarCambios(true, 'formulario');
-    }
 }
 
 /**
@@ -706,67 +658,8 @@ function ejecutarAccionPanel(boton) {
         return;
     }
 
-    if (accion === 'import-form-pdf') {
-        document.querySelector('[data-import-form-pdf]')?.click();
-        return;
-    }
-
-    if (accion === 'new-form') {
-        estadoPortal.formularioActual = crearFormularioVacioPortal();
-        marcarCambios(true, 'formulario');
-        renderEditorFormulario();
-        return;
-    }
-
-    if (accion === 'edit-form') {
-        abrirFormularioParaEditar(Number(boton.dataset.id));
-        return;
-    }
-
-    if (accion === 'delete-form') {
-        eliminarFormularioPortal(
-            Number(boton.dataset.id),
-            Number(boton.dataset.responses || 0)
-        );
-        return;
-    }
-
-    if (accion === 'cancel-form') {
-        estadoPortal.formularioActual = null;
-        marcarCambios(false, 'formulario');
-        renderPanelFormularios();
-        return;
-    }
-
-    if (accion === 'save-form') {
-        guardarFormularioPortal();
-        return;
-    }
-
-    if (accion === 'upload-form-pdf') {
-        document.querySelector('[data-form-pdf-input]')?.click();
-        return;
-    }
-
-    if (accion === 'add-form-section') {
-        estadoPortal.formularioActual.secciones.push({
-            titulo: 'Nuevo apartado',
-            descripcion: '',
-            preguntas: []
-        });
-        marcarCambios(true, 'formulario');
-        renderEditorFormulario();
-        return;
-    }
-
-    if (accion.includes('form-section')) {
-        modificarSeccionFormulario(boton);
-        return;
-    }
-
-    if (accion.includes('form-question')) {
-        modificarPreguntaFormulario(boton);
-    }
+    // Las acciones de Formularios se definen en configuradorFormularios.js.
+    ejecutarAccionFormulario(boton);
 }
 
 /**
@@ -1714,6 +1607,9 @@ window.addEventListener('pageshow', function (evento) {
 });
 
 window.addEventListener('beforeunload', function (evento) {
+    // El aviso de borrador se mantiene al navegar normalmente. Si el control
+    // de sesión está cerrando el acceso, dejamos que el navegador salga.
+    if (typeof saliendoPorSesionGestion !== 'undefined' && saliendoPorSesionGestion) return;
     if (!estadoPortal.hayCambios) return;
     evento.preventDefault();
     evento.returnValue = '';

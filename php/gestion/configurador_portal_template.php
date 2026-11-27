@@ -117,15 +117,6 @@ $municipio['escudo'] = obtenerEscudoMunicipio($codMun, $municipio['escudo'] ?? '
                 </div>
 
                 <div class="portal-builder-preview__tools">
-                    <div class="portal-builder-preview-tabs" role="tablist" aria-label="Contenido de la vista previa">
-                        <button type="button" class="is-active" data-preview-mode="portal">
-                            <i class="bi bi-window"></i> Portal
-                        </button>
-                        <button type="button" data-preview-mode="formulario">
-                            <i class="bi bi-ui-checks-grid"></i> Formulario
-                        </button>
-                    </div>
-
                     <div class="portal-builder-devices" role="group" aria-label="Tamaño de la vista previa">
                         <button type="button" class="is-active" data-preview-size="desktop">Escritorio</button>
                         <button type="button" data-preview-size="tablet">Tableta</button>
@@ -141,10 +132,6 @@ $municipio['escudo'] = obtenerEscudoMunicipio($codMun, $municipio['escudo'] ?? '
                         title="Vista previa del portal público"
                         src="php/municipio/municipio.php?cod_mun=<?= urlencode($codMun) ?>&preview=1&editor=1">
                     </iframe>
-                </div>
-
-                <div id="vistaPreviaFormulario" class="portal-form-live-preview d-none">
-                    <!-- La vista previa del formulario se genera mediante JavaScript. -->
                 </div>
             </div>
         </section>
@@ -178,6 +165,8 @@ $municipio['escudo'] = obtenerEscudoMunicipio($codMun, $municipio['escudo'] ?? '
     <script src="js/gestion/configuradorFormularios.js?v=<?= (int)@filemtime(dirname(__DIR__, 2) . '/js/gestion/configuradorFormularios.js') ?>"></script>
     <script src="js/gestion/configuradorVistaPortal.js?v=<?= (int)@filemtime(dirname(__DIR__, 2) . '/js/gestion/configuradorVistaPortal.js') ?>"></script>
     <script src="js/municipios/formularioPublico.js?v=<?= filemtime(__DIR__ . '/../../js/municipios/formularioPublico.js') ?>"></script>
+    <!-- El diseñador dibuja la encuesta y reutiliza sus datos al mover bloques. -->
+    <script src="js/gestion/configuradorOrdenFormulario.js?v=<?= (int)@filemtime(dirname(__DIR__, 2) . '/js/gestion/configuradorOrdenFormulario.js') ?>"></script>
     <script src="js/gestion/configuradorVistaFormulario.js?v=<?= (int)@filemtime(dirname(__DIR__, 2) . '/js/gestion/configuradorVistaFormulario.js') ?>"></script>
     <script src="js/gestion/configuradorBloquesPortal.js?v=<?= (int)@filemtime(dirname(__DIR__, 2) . '/js/gestion/configuradorBloquesPortal.js') ?>"></script>
 </body>

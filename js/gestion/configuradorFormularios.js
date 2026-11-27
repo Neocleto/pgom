@@ -1,7 +1,13 @@
 /**
- * Formularios del configurador: listado, edición, importación y guardado.
- * Depende del estado y los campos comunes de configuradorPortal.js.
+ * Gestión de encuestas: listado, importación, ajustes y guardado.
+ * configuradorPortal.js envía a este archivo los clics y cambios del panel.
+ * El papel se dibuja en configuradorVistaFormulario.js. El orden y la
+ * jerarquía de bloques se modifican en configuradorOrdenFormulario.js.
  */
+
+let botonFormularioEnApertura = null;
+let posicionEdicionFormulario = null;
+let posicionSaltoVistaFormulario = null;
 
 /**
  * Dibuja el listado o el editor de formularios dinámicos.
@@ -34,10 +40,10 @@ function renderPanelFormularios() {
                            target="_blank" rel="noopener" title="Probar encuesta" aria-label="Probar ${escaparHtml(formulario.titulo)}">
                             <i class="bi bi-eye" aria-hidden="true"></i>
                         </a>` : ''}
-                    <button type="button" class="portal-small-button" data-action="edit-form" data-id="${Number(formulario.id)}" title="Editar">
+                    <button type="button" class="portal-small-button" data-action="edit-form" data-id="${Number(formulario.id)}" title="Editar formulario" aria-label="Editar ${escaparHtml(formulario.titulo)}">
                         <i class="bi bi-pencil"></i>
                     </button>
-                    <button type="button" class="portal-small-button is-danger" data-action="delete-form" data-id="${Number(formulario.id)}" data-responses="${respuestas}" title="Eliminar o archivar">
+                    <button type="button" class="portal-small-button is-danger" data-action="delete-form" data-id="${Number(formulario.id)}" data-responses="${respuestas}" title="Eliminar o archivar" aria-label="Eliminar o archivar ${escaparHtml(formulario.titulo)}">
                         <i class="bi bi-trash"></i>
                     </button>
                 </span>
@@ -63,7 +69,7 @@ function renderPanelFormularios() {
             <div class="portal-form-list">${filas || crearVacio('Aún no hay formularios.')}</div>`
         )}
     `;
-    cambiarModoVistaPrevia(estadoPortal.formularioActual ? 'formulario' : 'portal');
+    requestAnimationFrame(ajustarLienzoVistaPrevia);
 }
 
 /**
@@ -108,9 +114,7 @@ async function importarEncuestaDesdePdf(selector) {
         formulario.descripcion = resultado.borrador.descripcion || '';
         formulario.secciones = resultado.borrador.secciones;
         formulario.activo = false;
-        estadoPortal.formularioActual = formulario;
-        marcarCambios(true, 'formulario');
-        renderEditorFormulario();
+        iniciarEditorFormulario(normalizarFormularioPortal(formulario), true);
 
         const aviso = resultado.ocr ? ' Se ha usado reconocimiento de texto en las páginas escaneadas.' : '';
         Swal.fire('Borrador de encuesta preparado',
@@ -143,24 +147,18 @@ function crearFormularioVacioPortal() {
         texto_boton_pdf: 'Descargar encuesta en PDF',
         mensaje_confirmacion: 'Tu respuesta se ha registrado correctamente.',
         activo: true,
-        secciones: [
-            {
-                titulo: 'Datos generales',
-                descripcion: '',
-                preguntas: []
-            }
-        ]
+        secciones: []
     };
 }
 
 /**
  * Crea una pregunta nueva con valores fáciles de modificar.
  */
-function crearPreguntaVaciaPortal() {
+function crearPreguntaVaciaPortal(tipo = 'texto') {
     return {
-        enunciado: 'Nueva pregunta',
+        enunciado: '',
         ayuda: '',
-        tipo: 'texto',
+        tipo,
         obligatorio: false,
         ancho: 'completo',
         opciones: []
@@ -168,406 +166,389 @@ function crearPreguntaVaciaPortal() {
 }
 
 /**
- * Abre un formulario existente desde el servidor.
+ * Lee el formulario existente antes de mostrarlo. Se comprueba que el botón
+ * siga en pantalla y sea el último pulsado, por si el gestor navega mientras
+ * llega la respuesta o abre otro formulario.
  */
-async function abrirFormularioParaEditar(idFormulario) {
+async function abrirFormularioParaEditar(boton) {
+    const idFormulario = Number(boton.dataset.id);
+    botonFormularioEnApertura = boton;
+    boton.disabled = true;
+
     try {
         const datos = await solicitarJson(
             `php/gestion/formularios_dinamicos/acciones_formularios.php?accion=obtener&cod_mun=${encodeURIComponent(estadoPortal.codMun)}&id=${encodeURIComponent(idFormulario)}`
         );
 
-        estadoPortal.formularioActual = normalizarFormularioPortal(datos.formulario);
-        marcarCambios(false, 'formulario');
-        renderEditorFormulario();
+        if (botonFormularioEnApertura !== boton || !boton.isConnected) return;
+        const formulario = normalizarFormularioPortal(datos.formulario);
+        iniciarEditorFormulario(formulario, false);
+        document.querySelector('[data-action="cancel-form"]').focus({ preventScroll: true });
     } catch (error) {
-        Swal.fire('No se pudo abrir el formulario', error.message, 'error');
-    }
-}
-
-/**
- * Dibuja el formulario completo en una sola pantalla desplazable.
- * Se evita un asistente dentro de otro asistente para reducir la complejidad.
- */
-function renderEditorFormulario() {
-    const formulario = estadoPortal.formularioActual;
-    const ofreceFormularioOnline = formulario.modalidad !== 'pdf';
-    const ofreceDocumentoPdf = formulario.modalidad === 'pdf'
-        || formulario.modalidad === 'ambos';
-
-    establecerCabeceraPanel(
-        formulario.id ? 'Editar formulario' : 'Nuevo formulario',
-        'Completa los datos básicos y añade apartados y preguntas.'
-    );
-
-    const secciones = formulario.secciones.map(function (seccion, indiceSeccion) {
-        return crearEditorSeccionFormulario(seccion, indiceSeccion);
-    }).join('');
-
-    // El PDF solo se pide cuando la modalidad elegida lo va a mostrar.
-    const campoPdf = ofreceDocumentoPdf
-        ? `<div class="portal-config-field" style="grid-column:1/-1">
-                <label>Documento PDF imprimible</label>
-                <div class="input-group">
-                    <input
-                        class="form-control"
-                        data-form-field="pdf_url"
-                        value="${escaparHtml(formulario.pdf_url || '')}"
-                        placeholder="No hay PDF seleccionado"
-                        readonly>
-                    <button
-                        type="button"
-                        class="btn btn-outline-primary"
-                        data-action="upload-form-pdf">
-                        <i class="bi bi-upload me-1"></i>
-                        Subir PDF
-                    </button>
-                </div>
-                <input
-                    type="file"
-                    class="d-none"
-                    data-form-pdf-input
-                    accept="application/pdf,.pdf">
-                <div class="portal-config-help">Archivo PDF de hasta 8 MB.</div>
-           </div>`
-        : '';
-
-    const campoTextoOnline = ofreceFormularioOnline
-        ? crearCampoTextoFormulario(
-            'Texto del botón online',
-            'texto_boton_online',
-            formulario.texto_boton_online || 'Realizar encuesta online'
-        )
-        : '';
-
-    const campoTextoPdf = ofreceDocumentoPdf
-        ? crearCampoTextoFormulario(
-            'Texto del botón PDF',
-            'texto_boton_pdf',
-            formulario.texto_boton_pdf || ''
-        )
-        : '';
-
-    const campoConfirmacion = ofreceFormularioOnline
-        ? `<div class="portal-config-field" style="grid-column:1/-1">
-                <label>Mensaje después de enviar</label>
-                <input
-                    class="form-control"
-                    data-form-field="mensaje_confirmacion"
-                    value="${escaparHtml(formulario.mensaje_confirmacion || '')}">
-           </div>`
-        : '';
-
-    const constructorPreguntas = ofreceFormularioOnline
-        ? `<div class="portal-form-builder-toolbar">
-                <div>
-                    <strong>Apartados y preguntas</strong>
-                    <div class="portal-config-help">
-                        Organiza el formulario por temas para que sea fácil de responder.
-                    </div>
-                </div>
-                <button
-                    type="button"
-                    class="btn btn-outline-primary btn-sm"
-                    data-action="add-form-section">
-                    <i class="bi bi-plus-circle me-1"></i>
-                    Añadir apartado
-                </button>
-           </div>
-
-           <div id="constructorFormularioPortal">
-                ${secciones || crearVacio('Añade un apartado para comenzar.')}
-           </div>`
-        : `<div class="alert alert-light border mt-3 mb-0">
-                <i class="bi bi-file-earmark-pdf text-danger me-1"></i>
-                Esta modalidad solo publica el documento PDF. No necesita preguntas online.
-           </div>`;
-
-    document.getElementById('contenidoPanelConfigurador').innerHTML = `
-        <div class="portal-form-builder-toolbar portal-form-builder-toolbar--guardar">
-            <button
-                type="button"
-                class="btn btn-outline-secondary btn-sm"
-                data-action="cancel-form">
-                <i class="bi bi-arrow-left me-1"></i>
-                Volver al listado
-            </button>
-
-            <button
-                type="button"
-                class="btn btn-success btn-sm"
-                data-action="save-form">
-                <i class="bi bi-check2-circle me-1"></i>
-                Guardar formulario
-            </button>
-        </div>
-
-        ${crearTarjetaConfiguracion(
-            'Datos básicos',
-            'Define el título, la descripción y la forma de participación.',
-            `<div class="portal-config-grid">
-                ${crearCampoTextoFormulario(
-                    'Título',
-                    'titulo',
-                    formulario.titulo,
-                    'Ej: Encuesta inicial de participación'
-                )}
-
-                ${crearCampoSeleccionFormulario(
-                    'Modalidad',
-                    'modalidad',
-                    formulario.modalidad,
-                    [
-                        ['online', 'Solo formulario online'],
-                        ['pdf', 'Solo documento PDF'],
-                        ['ambos', 'Formulario online y PDF']
-                    ]
-                )}
-
-                <div class="portal-config-field" style="grid-column:1/-1">
-                    <label>Descripción</label>
-                    <textarea
-                        class="form-control"
-                        rows="3"
-                        data-form-field="descripcion">${escaparHtml(formulario.descripcion || '')}</textarea>
-                </div>
-
-                ${crearCampoColorFormulario(
-                    'Color de la encuesta',
-                    'color',
-                    formulario.color || estadoPortal.configuracion.color_primario || '#003b17'
-                )}
-                ${crearCampoIcono('Icono de la encuesta', 'icono', formulario.icono ?? 'clipboard-check', 'data-form-field')}
-
-                ${campoPdf}
-            </div>`
-        )}
-
-        ${crearTarjetaConfiguracion(
-            'Opciones de publicación',
-            'Ajustes menos habituales que puedes dejar con sus valores iniciales.',
-            `<details class="portal-config-advanced">
-                <summary>
-                    <span><i class="bi bi-sliders me-1"></i>Mostrar opciones avanzadas</span>
-                    <small>Textos de los botones y mensaje final</small>
-                </summary>
-
-                <div class="portal-config-grid portal-config-advanced__body">
-                    ${campoTextoOnline}
-                    ${campoTextoPdf}
-                    ${campoConfirmacion}
-                    <div class="portal-config-field" style="grid-column:1/-1">
-                        <div class="form-check form-switch mt-2">
-                            <input
-                                class="form-check-input"
-                                type="checkbox"
-                                id="formularioPublicado"
-                                data-form-field="activo"
-                                ${convertirBooleano(formulario.activo, true) ? 'checked' : ''}>
-                            <label class="form-check-label" for="formularioPublicado">
-                                Publicar en la página del municipio
-                            </label>
-                        </div>
-                    </div>
-                </div>
-            </details>`
-        )}
-
-        ${constructorPreguntas}
-    `;
-    cambiarModoVistaPrevia('formulario');
-}
-
-/**
- * Dibuja un apartado y todas sus preguntas.
- */
-function crearEditorSeccionFormulario(seccion, indiceSeccion) {
-    const preguntas = (seccion.preguntas || []).map(function (pregunta, indicePregunta) {
-        return crearEditorPreguntaFormulario(pregunta, indiceSeccion, indicePregunta);
-    }).join('');
-
-    return `
-        <section class="portal-form-builder-section" data-form-section="${indiceSeccion}" style="--nivel-encuesta:${Number(seccion.nivel) || 0}">
-            <div class="portal-repeater-item__heading">
-                <strong>${Number(seccion.nivel) ? 'Subapartado' : 'Apartado'} · ${escaparHtml(seccion.numero || String(indiceSeccion + 1))}</strong>
-                <span class="portal-repeater-item__actions">
-                    <button type="button" class="portal-small-button" data-action="move-form-section-up" data-section="${indiceSeccion}" title="Subir"><i class="bi bi-arrow-up"></i></button>
-                    <button type="button" class="portal-small-button" data-action="move-form-section-down" data-section="${indiceSeccion}" title="Bajar"><i class="bi bi-arrow-down"></i></button>
-                    <button type="button" class="portal-small-button is-danger" data-action="remove-form-section" data-section="${indiceSeccion}" title="Eliminar"><i class="bi bi-trash"></i></button>
-                </span>
-            </div>
-
-            <div class="portal-config-grid">
-                ${crearCampoTextoFormulario('Título del apartado', `secciones.${indiceSeccion}.titulo`, seccion.titulo || '')}
-                ${crearCampoTextoFormulario('Descripción', `secciones.${indiceSeccion}.descripcion`, seccion.descripcion || '')}
-                ${crearCampoNumeroEncuesta(`secciones.${indiceSeccion}.numero`, seccion.numero)}
-                ${crearCampoSeleccionFormulario('Nivel', `secciones.${indiceSeccion}.nivel`, String(seccion.nivel || 0), [
-                    ['0', 'Apartado principal'], ['1', 'Subapartado'], ['2', 'Subapartado de segundo nivel']
-                ])}
-            </div>
-
-            <div class="mt-3">
-                ${preguntas || '<div class="portal-config-help">Este apartado todavía no tiene preguntas.</div>'}
-            </div>
-
-            <button type="button" class="btn btn-outline-primary btn-sm mt-2" data-action="add-form-question" data-section="${indiceSeccion}">
-                <i class="bi bi-plus-circle me-1"></i>Añadir pregunta
-            </button>
-            ${Number(seccion.nivel || 0) < 2 ? `<button type="button" class="btn btn-outline-secondary btn-sm mt-2"
-                data-action="add-child-form-section" data-section="${indiceSeccion}">Añadir subapartado</button>` : ''}
-        </section>
-    `;
-}
-
-/**
- * Dibuja una pregunta editable.
- */
-function crearEditorPreguntaFormulario(pregunta, indiceSeccion, indicePregunta) {
-    const rutaBase = `secciones.${indiceSeccion}.preguntas.${indicePregunta}`;
-    const necesitaOpciones = ['opcion_unica', 'opcion_multiple', 'desplegable'].includes(pregunta.tipo);
-
-    return `
-        <article class="portal-form-builder-question" data-form-question="${indicePregunta}" style="--nivel-encuesta:${Number(pregunta.nivel) || 0}">
-            <div class="portal-repeater-item__heading">
-                <strong>${Number(pregunta.nivel) ? 'Subpregunta' : 'Pregunta'} · ${escaparHtml(pregunta.numero || String(indicePregunta + 1))}</strong>
-                <span class="portal-repeater-item__actions">
-                    <button type="button" class="portal-small-button" data-action="move-form-question-up" data-section="${indiceSeccion}" data-question="${indicePregunta}" title="Subir"><i class="bi bi-arrow-up"></i></button>
-                    <button type="button" class="portal-small-button" data-action="move-form-question-down" data-section="${indiceSeccion}" data-question="${indicePregunta}" title="Bajar"><i class="bi bi-arrow-down"></i></button>
-                    <button type="button" class="portal-small-button is-danger" data-action="remove-form-question" data-section="${indiceSeccion}" data-question="${indicePregunta}" title="Eliminar"><i class="bi bi-trash"></i></button>
-                </span>
-            </div>
-
-            <div class="portal-config-grid">
-                ${crearCampoTextoFormulario('Pregunta', `${rutaBase}.enunciado`, pregunta.enunciado || '')}
-                ${crearCampoNumeroEncuesta(`${rutaBase}.numero`, pregunta.numero)}
-                ${crearCampoSeleccionFormulario('Nivel', `${rutaBase}.nivel`, String(pregunta.nivel || 0), [
-                    ['0', 'Pregunta principal'], ['1', 'Subpregunta'], ['2', 'Subpregunta de segundo nivel']
-                ])}
-                ${crearCampoSeleccionFormulario('Tipo de respuesta', `${rutaBase}.tipo`, pregunta.tipo || 'texto', [
-                    ['texto', 'Texto corto'],
-                    ['texto_largo', 'Texto largo'],
-                    ['numero', 'Número'],
-                    ['fecha', 'Fecha'],
-                    ['si_no', 'Sí / No'],
-                    ['opcion_unica', 'Una opción'],
-                    ['opcion_multiple', 'Varias opciones'],
-                    ['desplegable', 'Lista desplegable']
-                ])}
-                ${crearCampoTextoFormulario('Texto de ayuda', `${rutaBase}.ayuda`, pregunta.ayuda || '', 'Opcional')}
-                ${crearCampoSeleccionFormulario('Ancho', `${rutaBase}.ancho`, pregunta.ancho || 'completo', [
-                    ['completo', 'Fila completa'],
-                    ['medio', 'Media fila']
-                ])}
-                ${necesitaOpciones ? `
-                    <div class="portal-config-field" style="grid-column:1/-1">
-                        <label>Opciones, una por línea</label>
-                        <textarea class="form-control" rows="4" data-form-options="${rutaBase}.opciones">${escaparHtml((pregunta.opciones || []).join('\n'))}</textarea>
-                    </div>
-                ` : ''}
-                <div class="portal-config-field" style="grid-column:1/-1">
-                    <div class="form-check form-switch mt-1">
-                        <input class="form-check-input" type="checkbox" id="obligatoria_${indiceSeccion}_${indicePregunta}" data-form-field="${rutaBase}.obligatorio" ${pregunta.obligatorio ? 'checked' : ''}>
-                        <label class="form-check-label" for="obligatoria_${indiceSeccion}_${indicePregunta}">Respuesta obligatoria</label>
-                    </div>
-                </div>
-            </div>
-            ${Number(pregunta.nivel || 0) < 2 ? `<button type="button" class="btn btn-outline-secondary btn-sm mt-2"
-                data-action="add-child-form-question" data-section="${indiceSeccion}" data-question="${indicePregunta}">Añadir subpregunta</button>` : ''}
-        </article>
-    `;
-}
-
-function crearCampoNumeroEncuesta(ruta, numero) {
-    return `<label class="portal-config-field">
-        <span>Numeración (opcional)</span>
-        <input class="form-control" maxlength="30" data-form-field="${ruta}" value="${escaparHtml(numero || '')}" placeholder="Ej. 1.2">
-    </label>`;
-}
-
-/**
- * Mueve, elimina o añade elementos dentro del formulario actual.
- */
-function modificarSeccionFormulario(boton) {
-    const accion = boton.dataset.action;
-    const indiceSeccion = Number(boton.dataset.section);
-    const secciones = estadoPortal.formularioActual.secciones;
-
-    if (accion === 'add-child-form-section') {
-        insertarHijoEncuesta(secciones, indiceSeccion, { titulo: 'Nuevo subapartado', descripcion: '', preguntas: [] });
-    } else {
-        modificarOrdenEncuesta(secciones, indiceSeccion, accion);
-    }
-
-    marcarCambios(true, 'formulario');
-    renderEditorFormulario();
-}
-
-/**
- * Mueve, elimina o añade preguntas dentro de un apartado.
- */
-function modificarPreguntaFormulario(boton) {
-    const accion = boton.dataset.action;
-    const indiceSeccion = Number(boton.dataset.section);
-    const indicePregunta = Number(boton.dataset.question);
-    const preguntas = estadoPortal.formularioActual.secciones[indiceSeccion]?.preguntas;
-
-    if (!preguntas) {
-        return;
-    }
-
-    if (accion === 'add-form-question') {
-        preguntas.push(crearPreguntaVaciaPortal());
-    } else if (accion === 'add-child-form-question') {
-        insertarHijoEncuesta(preguntas, indicePregunta, crearPreguntaVaciaPortal());
-    } else {
-        modificarOrdenEncuesta(preguntas, indicePregunta, accion);
-    }
-
-    marcarCambios(true, 'formulario');
-    renderEditorFormulario();
-}
-
-// Los elementos que siguen con más sangría forman parte del mismo bloque.
-function finBloqueEncuesta(lista, indice) {
-    const nivel = Number(lista[indice].nivel || 0);
-    let fin = indice + 1;
-    while (fin < lista.length && Number(lista[fin].nivel || 0) > nivel) {
-        fin++;
-    }
-    return fin;
-}
-
-function insertarHijoEncuesta(lista, indice, nuevo) {
-    nuevo.nivel = Number(lista[indice].nivel || 0) + 1;
-    lista.splice(finBloqueEncuesta(lista, indice), 0, nuevo);
-}
-
-function modificarOrdenEncuesta(lista, indice, accion) {
-    const nivel = Number(lista[indice].nivel || 0);
-    const fin = finBloqueEncuesta(lista, indice);
-    if (accion.startsWith('remove-')) {
-        // Al quitar un encabezado, sus elementos se conservan un nivel más arriba.
-        for (let hijo = indice + 1; hijo < fin; hijo++) {
-            lista[hijo].nivel = Number(lista[hijo].nivel) - 1;
+        if (botonFormularioEnApertura === boton && boton.isConnected) {
+            Swal.fire('No se pudo abrir el formulario', error.message, 'error');
         }
-        lista.splice(indice, 1);
-        return;
+    } finally {
+        boton.disabled = false;
+        if (botonFormularioEnApertura === boton) botonFormularioEnApertura = null;
+    }
+}
+
+/** Un borrador creado desde cero muestra la cabecera editable de la encuesta. */
+function iniciarEditorFormulario(formulario, hayCambios, desdeCero = false) {
+    estadoPortal.formularioActual = formulario;
+    formularioDesdeCero = desdeCero;
+    probandoFormulario = false;
+    posicionEdicionFormulario = null;
+    posicionSaltoVistaFormulario = null;
+    reiniciarOrdenFormulario();
+    marcarCambios(hayCambios, 'formulario');
+    renderEditorFormulario(formulario.modalidad === 'pdf');
+    document.getElementById('contenidoPanelConfigurador').scrollTop = 0;
+}
+
+/** Pide confirmación antes de descartar los cambios pendientes del borrador. */
+async function volverListadoFormularios() {
+    const formulario = estadoPortal.formularioActual;
+    if (formulario.guardando || formulario.subiendoPdf) return;
+
+    if (estadoPortal.cambiosFormulario) {
+        const decision = await Swal.fire({
+            title: '¿Volver al listado?',
+            text: 'Se perderán los cambios que todavía no hayas guardado.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Descartar cambios',
+            cancelButtonText: 'Seguir editando',
+            focusCancel: true,
+            heightAuto: false
+        });
+        if (!decision.isConfirmed || estadoPortal.formularioActual !== formulario) return;
     }
 
-    if (accion.endsWith('-down')) {
-        if (fin >= lista.length || Number(lista[fin].nivel || 0) !== nivel) return;
-        const destino = finBloqueEncuesta(lista, fin);
-        const bloque = lista.splice(indice, fin - indice);
-        lista.splice(destino - bloque.length, 0, ...bloque);
-        return;
+    estadoPortal.formularioActual = null;
+    marcarCambios(false, 'formulario');
+    renderPanelFormularios();
+    document.querySelector('[data-action="new-form"]')?.focus();
+}
+
+/** Datos generales. Cambiar aquí los textos, campos y opciones de publicación. */
+function crearDatosFormulario(formulario) {
+    const online = formulario.modalidad !== 'pdf';
+    const pdf = formulario.modalidad === 'pdf' || formulario.modalidad === 'ambos';
+
+    return `
+        <section class="portal-config-card">
+            <div class="portal-config-grid">
+                ${crearCampoSeleccionFormulario('Formato', 'modalidad', formulario.modalidad, [
+                    ['online', 'Solo formulario online'],
+                    ['pdf', 'Solo documento PDF'],
+                    ['ambos', 'Formulario online y PDF']
+                ])}
+                <div class="form-check form-switch portal-diseno-encuesta__publicacion">
+                    <input class="form-check-input" type="checkbox" id="formularioPublicado" data-form-field="activo"
+                        ${convertirBooleano(formulario.activo, true) ? 'checked' : ''}>
+                    <label class="form-check-label" for="formularioPublicado">Publicar en la página del municipio</label>
+                </div>
+                ${pdf ? `
+                    <div class="portal-config-field portal-diseno-encuesta__ancho">
+                        <label for="documentoFormularioPortal">Documento PDF (hasta 8 MB)</label>
+                        <div class="input-group">
+                            <input id="documentoFormularioPortal" class="form-control"
+                                value="${escaparHtml(formulario.pdf_url || '')}" placeholder="Sin PDF" readonly>
+                            <button type="button" class="btn btn-outline-primary btn-sm" data-action="upload-form-pdf"
+                                ${formulario.subiendoPdf ? 'disabled' : ''}>Subir PDF</button>
+                        </div>
+                        <input type="file" data-form-pdf-input hidden accept="application/pdf,.pdf">
+                    </div>` : ''}
+            </div>
+
+            <details class="portal-config-advanced mt-3">
+                <summary><span>Más opciones del formulario</span><i class="bi bi-chevron-down" aria-hidden="true"></i></summary>
+                <div class="portal-config-grid portal-config-advanced__body">
+                    ${crearSelectorColorPortal('Color de la encuesta', 'data-form-field', 'color',
+                        formulario.color || estadoPortal.configuracion.color_primario || '#003b17')}
+                    ${crearCampoIcono('Icono de la encuesta', 'icono', formulario.icono ?? 'clipboard-check', 'data-form-field')}
+                    ${online ? crearCampoTextoFormulario('Texto del botón online', 'texto_boton_online', formulario.texto_boton_online) : ''}
+                    ${pdf ? crearCampoTextoFormulario('Texto del botón PDF', 'texto_boton_pdf', formulario.texto_boton_pdf) : ''}
+                    ${online ? crearCampoTextoFormulario('Mensaje después de enviar', 'mensaje_confirmacion',
+                        formulario.mensaje_confirmacion) : ''}
+                </div>
+            </details>
+
+        </section>`;
+}
+
+/* -------- Acciones de la barra, la paleta y el papel -------- */
+
+function ejecutarAccionFormulario(boton) {
+    const accion = boton.dataset.action;
+
+    switch (accion) {
+        case 'import-form-pdf':
+            document.querySelector('[data-import-form-pdf]')?.click();
+            break;
+        case 'new-form':
+            iniciarEditorFormulario(crearFormularioVacioPortal(), true, true);
+            enfocarCampoFormulario(mostrarCampoEditorFormulario('titulo'));
+            break;
+        case 'edit-form':
+            abrirFormularioParaEditar(boton);
+            break;
+        case 'delete-form':
+            eliminarFormularioPortal(Number(boton.dataset.id), Number(boton.dataset.responses || 0));
+            break;
+        case 'cancel-form':
+            volverListadoFormularios();
+            break;
+        case 'save-form':
+            guardarFormularioPortal();
+            break;
+        case 'upload-form-pdf':
+            document.querySelector('[data-form-pdf-input]')?.click();
+            break;
+        case 'form-settings': {
+            const ajustes = document.getElementById('ajustesEditorFormulario');
+            mostrarAjustesFormulario(ajustes.hidden || !boton.hasAttribute('aria-controls'));
+            if (!boton.hasAttribute('aria-controls')) enfocarCampoFormulario(ajustes.querySelector('select'));
+            break;
+        }
+        case 'show-form-live-preview':
+            saltarVistaEnDirectoFormulario(true);
+            break;
+        case 'back-from-form-live-preview':
+            saltarVistaEnDirectoFormulario(false);
+            break;
+        case 'toggle-form-test':
+            alternarPruebaFormulario();
+            break;
+        case 'toggle-form-section': {
+            const apartado = boton.closest('[data-apartado-lienzo]');
+            alternarPlegadoApartadoFormulario(Number(apartado.dataset.apartadoLienzo));
+            break;
+        }
+        case 'toggle-form-question':
+            alternarPlegadoPreguntaFormulario(boton.closest('[data-pregunta-lienzo]'));
+            break;
+        case 'toggle-all-form-sections':
+            plegarTodosApartadosFormulario(boton.dataset.plegar === 'true');
+            break;
+        case 'add-form-section':
+            agregarDesdePaletaFormulario('apartado');
+            break;
+        case 'add-form-palette':
+            agregarDesdePaletaFormulario(boton.dataset.arrastrarTipo);
+            break;
+        case 'add-form-question-here': {
+            const apartado = Number(boton.dataset.bloqueApartado);
+            // Un clic crea una pregunta de texto. Su tipo se puede cambiar ahí mismo.
+            agregarBloqueFormulario('texto', destinoAntesFormulario(apartado, listaBloquesFormulario(apartado).length));
+            break;
+        }
+        case 'add-form-child': {
+            const apartado = Number(boton.dataset.bloqueApartado);
+            const indice = Number(boton.dataset.bloqueIndice);
+            agregarBloqueFormulario(apartado === -1 ? 'apartado' : 'texto', destinoHijoFormulario(apartado, indice));
+            break;
+        }
+        case 'form-block-menu': {
+            const menu = boton.parentElement.querySelector('[data-menu-bloque]');
+            menu.open = !menu.open;
+            if (menu.open) menu.querySelector('summary').focus({ preventScroll: true });
+            break;
+        }
+        case 'move-form-block':
+            moverBloqueConFlechaFormulario(leerOrigenBotonFormulario(boton), Number(boton.dataset.direccion));
+            break;
+        case 'nest-form-block':
+        case 'raise-form-block':
+            anidarBloqueFormulario(leerOrigenBotonFormulario(boton), accion === 'nest-form-block');
+            break;
+        case 'delete-form-block':
+            borrarBloqueFormulario(leerOrigenBotonFormulario(boton));
+            break;
+        case 'undo-form-delete':
+            deshacerBorradoFormulario();
+            break;
+    }
+}
+
+/** En pantalla estrecha la vista va debajo. El atajo recuerda el punto de edición. */
+function saltarVistaEnDirectoFormulario(mostrar) {
+    const panel = document.getElementById('contenidoPanelConfigurador');
+    if (mostrar) {
+        posicionSaltoVistaFormulario = { panel: panel.scrollTop, pagina: window.scrollY };
+        const titulo = document.getElementById('tituloVistaEnDirectoFormulario');
+        titulo.scrollIntoView({ block: 'start' });
+        titulo.focus({ preventScroll: true });
+    } else if (posicionSaltoVistaFormulario) {
+        document.querySelector('[data-action="show-form-live-preview"]').focus({ preventScroll: true });
+        panel.scrollTop = posicionSaltoVistaFormulario.panel;
+        window.scrollTo(0, posicionSaltoVistaFormulario.pagina);
+    } else {
+        enfocarCampoFormulario(mostrarCampoEditorFormulario('titulo'));
+    }
+}
+
+/**
+ * La prueba empieza arriba. Al volver recuperamos la posición de edición:
+ * en escritorio se desplaza el panel y en móvil se desplaza la página.
+ */
+function alternarPruebaFormulario() {
+    const panel = document.getElementById('contenidoPanelConfigurador');
+    if (!probandoFormulario) {
+        posicionEdicionFormulario = {
+            panel: panel.scrollTop,
+            pagina: window.scrollY,
+            ajustes: !document.getElementById('ajustesEditorFormulario').hidden,
+            vista: document.getElementById('vistaEnDirectoFormulario').scrollTop,
+            masTipos: document.getElementById('masTiposFormulario').open
+        };
     }
 
-    let anterior = indice - 1;
-    while (anterior >= 0 && Number(lista[anterior].nivel || 0) > nivel) {
-        anterior--;
+    probandoFormulario = !probandoFormulario;
+    const volviendoEditar = !probandoFormulario;
+    renderEditorFormulario(volviendoEditar && posicionEdicionFormulario.ajustes);
+    if (volviendoEditar) {
+        document.getElementById('masTiposFormulario').open = posicionEdicionFormulario.masTipos;
+        document.getElementById('vistaEnDirectoFormulario').scrollTop = posicionEdicionFormulario.vista;
     }
-    if (anterior >= 0 && Number(lista[anterior].nivel || 0) === nivel) {
-        const bloque = lista.splice(indice, fin - indice);
-        lista.splice(anterior, 0, ...bloque);
+    panel.scrollTop = volviendoEditar ? posicionEdicionFormulario.panel : 0;
+    window.scrollTo(0, volviendoEditar ? posicionEdicionFormulario.pagina : 0);
+    document.querySelector('[data-action="toggle-form-test"]').focus({ preventScroll: true });
+}
+
+function leerOrigenBotonFormulario(boton) {
+    return { apartado: Number(boton.dataset.bloqueApartado), indice: Number(boton.dataset.bloqueIndice) };
+}
+
+function mostrarAjustesFormulario(abierto) {
+    const ajustes = document.getElementById('ajustesEditorFormulario');
+    if (!ajustes) return;
+    ajustes.hidden = !abierto;
+    document.querySelector('[data-action="form-settings"][aria-controls]').setAttribute('aria-expanded', String(abierto));
+}
+
+function mostrarCampoEditorFormulario(ruta) {
+    const panel = document.getElementById('contenidoPanelConfigurador');
+    const campo = panel.querySelector(`[data-form-field="${ruta}"], [data-form-options="${ruta}"]`);
+    if (!campo) return null;
+
+    // Una validación puede señalar una pregunta en un apartado plegado.
+    // Abrimos primero el apartado y luego la pregunta para poder enfocar el campo.
+    const tarjetaApartado = campo.closest('[data-apartado-lienzo]');
+    if (tarjetaApartado) {
+        const apartado = Number(tarjetaApartado.dataset.apartadoLienzo);
+        const tarjetaPregunta = campo.closest('[data-pregunta-lienzo]');
+        if (abrirApartadoFormulario(apartado)) actualizarPlegadoApartadosFormulario();
+        if (tarjetaPregunta && abrirPreguntaFormulario(apartado, Number(tarjetaPregunta.dataset.preguntaLienzo))) {
+            actualizarPlegadoPreguntasFormulario(tarjetaApartado);
+        }
+    }
+    if (campo.closest('#ajustesEditorFormulario')) mostrarAjustesFormulario(true);
+    const detalle = campo.closest('details');
+    if (detalle) detalle.open = true;
+    return campo;
+}
+
+/** El foco sigue a la operación, incluso si el bloque está fuera de pantalla. */
+function enfocarCampoFormulario(campo) {
+    if (!campo) return;
+    campo.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+    campo.focus({ preventScroll: true });
+}
+
+/**
+ * data-form-field indica dónde guardar el control. Por ejemplo:
+ * secciones.0.preguntas.1.enunciado es la segunda pregunta del primer apartado.
+ * Las opciones se escriben en líneas y PHP las recibe como una lista.
+ */
+function gestionarCambioFormulario(evento) {
+    const campo = evento.target;
+    const formulario = estadoPortal.formularioActual;
+
+    if (campo.hasAttribute('data-import-form-pdf')) {
+        if (evento.type === 'change') importarEncuestaDesdePdf(campo);
+        return true;
+    }
+    if (!formulario) return false;
+
+    if (campo.hasAttribute('data-form-pdf-input')) {
+        if (evento.type === 'change') {
+            const archivo = campo.files[0];
+            campo.value = '';
+            subirPdfFormularioPortal(archivo);
+        }
+        return true;
+    }
+    if (campo.hasAttribute('data-ir-apartado')) {
+        if (evento.type === 'change' && campo.value !== '') {
+            seleccionarApartadoFormulario(Number(campo.value));
+            enfocarCampoFormulario(mostrarCampoEditorFormulario(`secciones.${campo.value}.titulo`));
+        }
+        return true;
+    }
+    if (campo.hasAttribute('data-mover-a-apartado')) {
+        if (evento.type === 'change' && campo.value !== '') {
+            const destino = Number(campo.value);
+            moverBloqueFormulario(leerOrigenBotonFormulario(campo),
+                destinoAntesFormulario(destino, formulario.secciones[destino].preguntas.length));
+        }
+        return true;
+    }
+
+    const rutaOpciones = campo.dataset.formOptions;
+    const ruta = campo.dataset.formField || rutaOpciones;
+    if (!ruta) return false;
+    if (evento.type !== (campo.tagName === 'SELECT' ? 'change' : 'input')) return true;
+    if (ruta === 'color' && !esColorPortal(campo.value)) return true;
+
+    let valor = obtenerValorCampo(campo);
+    if (rutaOpciones) valor = campo.value.split('\n').map(linea => linea.trim()).filter(Boolean);
+    establecerValorRuta(formulario, ruta, valor);
+    marcarCambios(true, 'formulario');
+
+    // Solo los campos que cambian el HTML repintan el papel. Al escribir,
+    // se actualiza el borrador sin retirar el campo que tiene el cursor.
+    if (ruta === 'modalidad') {
+        renderEditorFormulario(true);
+        enfocarCampoFormulario(mostrarCampoEditorFormulario(ruta));
+    } else if (ruta.endsWith('.tipo')) {
+        // Solo se vuelve a dibujar al cambiar un tipo, para mostrar sus opciones.
+        renderizarLienzoFormulario();
+        enfocarCampoFormulario(mostrarCampoEditorFormulario(ruta));
+    } else if (ruta === 'icono' && formularioDesdeCero) {
+        renderizarLienzoFormulario();
+    } else if (ruta === 'color') {
+        document.querySelector('#lienzoEditorFormulario .portal-form-preview-page').style.setProperty('--form-preview-color', valor);
+        programarVistaEnDirectoFormulario();
+    } else {
+        actualizarTextoLienzoFormulario(campo, ruta, valor);
+        programarVistaEnDirectoFormulario();
+    }
+    return true;
+}
+
+function actualizarTextoLienzoFormulario(campo, ruta, valor) {
+    const partes = ruta.split('.');
+    if (ruta === 'titulo') {
+        document.getElementById('descripcionPanelConfigurador').textContent = valor;
+    } else if (partes.length === 3 && partes[2] === 'titulo') {
+        const nivel = nivelBloqueFormulario(estadoPortal.formularioActual.secciones[Number(partes[1])]);
+        for (const opcion of document.querySelectorAll(`[data-nombre-apartado="${partes[1]}"]`)) {
+            opcion.textContent = (nivel ? '↳ ' : '') + (valor.trim() || 'Apartado sin título');
+        }
+        actualizarDestinoPaletaFormulario();
+    } else if (ruta.endsWith('.enunciado')) {
+        const resumen = campo.closest('[data-pregunta-lienzo]').querySelector('[data-resumen-pregunta]');
+        resumen.textContent = valor.trim() || 'Pregunta sin enunciado';
+    } else if (ruta.endsWith('.numero') || ruta.endsWith('.ayuda')) {
+        const encabezado = campo.closest('.portal-diseno-encuesta__encabezado');
+        const muestra = encabezado.querySelector(ruta.endsWith('.numero') ? '[data-muestra-numero]' : '[data-muestra-ayuda]');
+        if (muestra) {
+            muestra.textContent = valor;
+            muestra.hidden = !String(valor).trim();
+        }
     }
 }
 
@@ -578,14 +559,14 @@ function modificarOrdenEncuesta(lista, indice, accion) {
  */
 async function subirPdfFormularioPortal(archivo) {
     const formulario = estadoPortal.formularioActual;
-    if (!archivo || !formulario || formulario.subiendoPdf) {
+    if (!archivo || !formulario || formulario.subiendoPdf) return;
+    if (!archivo.size || archivo.size > 8 * 1024 * 1024) {
+        Swal.fire('Revisa el archivo', 'Selecciona un PDF de hasta 8 MB.', 'warning');
         return;
     }
 
     formulario.subiendoPdf = true;
-    const botonSubir = document.querySelector('[data-action="upload-form-pdf"]');
-    botonSubir.disabled = true;
-    mostrarGuardadoFormularioPortal(true, 'Subiendo PDF');
+    cambiarEstadoSubidaFormulario(true);
 
     const datos = new FormData();
     datos.append('cod_mun', estadoPortal.codMun);
@@ -603,7 +584,12 @@ async function subirPdfFormularioPortal(archivo) {
         formulario.pdf_url = resultado.url;
         if (estadoPortal.formularioActual !== formulario) return;
         marcarCambios(true, 'formulario');
-        renderEditorFormulario();
+
+        // Actualizamos el campo si sigue a la vista. El gestor puede seguir
+        // revisando preguntas mientras el archivo termina de subir.
+        const campoPdf = document.getElementById('documentoFormularioPortal');
+        if (campoPdf) campoPdf.value = formulario.pdf_url;
+        renderizarLienzoFormulario();
 
         Swal.fire({
             icon: 'success',
@@ -617,78 +603,62 @@ async function subirPdfFormularioPortal(archivo) {
     } finally {
         delete formulario.subiendoPdf;
         if (estadoPortal.formularioActual === formulario) {
-            botonSubir.disabled = false;
-            mostrarGuardadoFormularioPortal(false);
+            cambiarEstadoSubidaFormulario(false);
         }
     }
 }
 
+/** Durante la subida se puede editar y navegar, pero el guardado espera al PDF. */
+function cambiarEstadoSubidaFormulario(subiendo) {
+    const panel = document.getElementById('contenidoPanelConfigurador');
+    for (const boton of panel.querySelectorAll('[data-action="upload-form-pdf"], [data-action="cancel-form"]')) {
+        boton.disabled = subiendo;
+    }
+    mostrarGuardadoFormularioPortal(subiendo, 'Subiendo PDF');
+}
+
 /**
- * Comprueba que el formulario contiene los datos mínimos para publicarse.
- *
- * La función no modifica el formulario. Solo devuelve un mensaje cuando
- * encuentra un problema y una cadena vacía cuando todo es correcto.
- *
- * @param {Object} formulario Formulario que se está editando.
- * @returns {string} Mensaje de validación o cadena vacía.
+ * Devuelve el primer error y la ruta que hay que abrir para corregirlo.
+ * Una ruta vacía corresponde al botón de añadir un apartado o una pregunta.
+ * La validación definitiva se hace en FormularioDinamicoModel.php.
  */
 function validarFormularioPortal(formulario) {
     if (!formulario.titulo.trim()) {
-        return 'Escribe un título para el formulario.';
+        return { mensaje: 'Escribe un título para el formulario.', ruta: 'titulo' };
     }
 
-    // Las modalidades que ofrecen descarga necesitan un PDF ya subido.
-    const necesitaPdf = formulario.modalidad === 'pdf'
-        || formulario.modalidad === 'ambos';
-
+    const necesitaPdf = formulario.modalidad === 'pdf' || formulario.modalidad === 'ambos';
     if (necesitaPdf && !String(formulario.pdf_url || '').trim()) {
-        return 'Sube el documento PDF antes de guardar esta modalidad.';
+        return { mensaje: 'Sube el documento PDF antes de guardar este formato.', ruta: 'modalidad', accion: 'upload-form-pdf' };
     }
-
-    // Un recurso exclusivamente PDF no necesita apartados ni preguntas.
-    if (formulario.modalidad === 'pdf') {
-        return '';
-    }
-
+    if (formulario.modalidad === 'pdf') return null;
     if (!formulario.secciones.length) {
-        return 'Añade al menos un apartado.';
+        return { mensaje: 'Añade al menos un apartado.', accion: 'add-form-section' };
     }
 
     let totalPreguntas = 0;
-
-    for (const seccion of formulario.secciones) {
-        if (!String(seccion.titulo || '').trim()) {
-            return 'Todos los apartados necesitan un título.';
+    for (const [indiceSeccion, seccion] of formulario.secciones.entries()) {
+        const rutaSeccion = `secciones.${indiceSeccion}`;
+        if (!seccion.titulo.trim()) {
+            return { mensaje: 'Escribe el título de este apartado.', ruta: rutaSeccion + '.titulo' };
         }
 
-        const preguntas = Array.isArray(seccion.preguntas)
-            ? seccion.preguntas
-            : [];
-
-        totalPreguntas += preguntas.length;
-
-        for (const pregunta of preguntas) {
-            if (!String(pregunta.enunciado || '').trim()) {
-                return 'Todas las preguntas necesitan un enunciado.';
+        totalPreguntas += seccion.preguntas.length;
+        for (const [indicePregunta, pregunta] of seccion.preguntas.entries()) {
+            const rutaPregunta = rutaSeccion + '.preguntas.' + indicePregunta;
+            if (!pregunta.enunciado.trim()) {
+                return { mensaje: 'Escribe el enunciado de esta pregunta.', ruta: rutaPregunta + '.enunciado' };
             }
-
-            const necesitaOpciones = [
-                'opcion_unica',
-                'opcion_multiple',
-                'desplegable'
-            ].includes(pregunta.tipo);
-
-            if (necesitaOpciones && new Set(pregunta.opciones || []).size < 2) {
-                return 'Las preguntas de opciones necesitan al menos dos respuestas posibles.';
+            if (tipoRespuestaConOpciones(pregunta.tipo) && new Set(pregunta.opciones).size < 2) {
+                return { mensaje: 'Escribe al menos dos opciones distintas, una por línea.', ruta: rutaPregunta + '.opciones' };
             }
         }
     }
 
-    if (formulario.modalidad !== 'pdf' && totalPreguntas === 0) {
-        return 'Añade al menos una pregunta para la modalidad online.';
+    if (totalPreguntas === 0) {
+        return { mensaje: 'Añade al menos una pregunta.', accion: 'add-form-question-here' };
     }
-
-    return '';
+    return null;
 }
 
 /**
@@ -707,7 +677,7 @@ function mostrarGuardadoFormularioPortal(guardando, mensaje = 'Guardando') {
     boton.disabled = guardando;
     boton.innerHTML = guardando
         ? '<span class="spinner-border spinner-border-sm me-1"></span>' + mensaje
-        : '<i class="bi bi-check2-circle me-1"></i>Guardar formulario';
+        : '<i class="bi bi-check2-circle me-1" aria-hidden="true"></i>Guardar<span class="d-none d-sm-inline"> formulario</span>';
 }
 
 /**
@@ -716,21 +686,41 @@ function mostrarGuardadoFormularioPortal(guardando, mensaje = 'Guardando') {
 async function guardarFormularioPortal() {
     const formulario = estadoPortal.formularioActual;
     if (!formulario || formulario.subiendoPdf || formulario.guardando) return;
-    const mensajeValidacion = validarFormularioPortal(formulario);
+    const error = validarFormularioPortal(formulario);
+    if (error) {
+        await Swal.fire({
+            title: 'Revisa el formulario',
+            text: error.mensaje,
+            icon: 'warning',
+            returnFocus: false,
+            heightAuto: false
+        });
 
-    if (mensajeValidacion) {
-        Swal.fire('Revisa el formulario', mensajeValidacion, 'warning');
+        if (estadoPortal.formularioActual !== formulario) return;
+        if (probandoFormulario) {
+            probandoFormulario = false;
+            renderEditorFormulario();
+        }
+        const campo = error.ruta ? mostrarCampoEditorFormulario(error.ruta) : null;
+        if (error.accion) {
+            if (error.accion === 'add-form-question-here' && abrirApartadoFormulario(0)) {
+                actualizarPlegadoApartadosFormulario();
+            }
+            enfocarCampoFormulario(document.querySelector(`[data-action="${error.accion}"]`));
+        } else {
+            enfocarCampoFormulario(campo);
+        }
         return;
     }
 
+    // Se prepara el JSON antes de añadir el indicador visual de guardado.
+    const cuerpo = JSON.stringify(formulario);
     mostrarGuardadoFormularioPortal(true);
     formulario.guardando = true;
 
-    // Mientras se guarda, las dos vistas quedan bloqueadas para evitar perder cambios.
+    // Se bloquea la edición hasta que el servidor responda.
     const editor = document.getElementById('contenidoPanelConfigurador');
-    const vista = document.getElementById('vistaPreviaFormulario');
     editor.inert = true;
-    vista.inert = true;
 
     try {
         const resultado = await solicitarJson(
@@ -740,7 +730,7 @@ async function guardarFormularioPortal() {
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify(formulario)
+                body: cuerpo
             }
         );
 
@@ -760,8 +750,10 @@ async function guardarFormularioPortal() {
         if (estadoPortal.formularioActual === formulario) {
             estadoPortal.formularioActual = null;
             marcarCambios(false, 'formulario');
-            renderPanelFormularios();
+            // Si el gestor eligió otro bloque del portal, respetamos esa pantalla.
+            if (estadoPortal.panelActual === 'formularios') renderPanelFormularios();
         }
+        editor.inert = false;
         renderMenuConfigurador();
         recargarIframePortal();
 
@@ -777,7 +769,7 @@ async function guardarFormularioPortal() {
         });
         if (decision.isConfirmed) {
             mostrarPanelConfigurador('seccion:participacion');
-            cambiarModoVistaPrevia('portal');
+            requestAnimationFrame(ajustarLienzoVistaPrevia);
             requestAnimationFrame(function () {
                 const lista = document.getElementById('botonesParticipacionConfigurador');
                 if (!lista) return;
@@ -790,7 +782,6 @@ async function guardarFormularioPortal() {
     } finally {
         delete formulario.guardando;
         editor.inert = false;
-        vista.inert = false;
         if (estadoPortal.formularioActual === formulario) mostrarGuardadoFormularioPortal(false);
     }
 }
@@ -843,39 +834,39 @@ async function eliminarFormularioPortal(idFormulario, totalRespuestas) {
     }
 }
 
-/**
- * Genera un campo de texto enlazado al formulario que se está editando.
- */
-function crearCampoTextoFormulario(etiqueta, ruta, valor, placeholder) {
+// ============================================================================
+// CAMPOS HTML Y DATOS RECIBIDOS DEL SERVIDOR
+// ============================================================================
+
+/** Las etiquetas usan for y el campo usa id para que se puedan pulsar y leer con teclado. */
+function crearCampoTextoFormulario(etiqueta, ruta, valor, placeholder = '', longitud = 0) {
     return `
         <div class="portal-config-field">
-            <label>${escaparHtml(etiqueta)}</label>
-            <input class="form-control" data-form-field="${ruta}" value="${escaparHtml(valor)}" placeholder="${escaparHtml(placeholder || '')}">
-        </div>
-    `;
+            <label for="campo-form-${ruta}">${escaparHtml(etiqueta)}</label>
+            <input id="campo-form-${ruta}" class="form-control" data-form-field="${ruta}"
+                value="${escaparHtml(valor || '')}" placeholder="${escaparHtml(placeholder)}" ${longitud ? `maxlength="${longitud}"` : ''}>
+        </div>`;
 }
 
-/**
- * Genera un selector enlazado al formulario que se está editando.
- */
+function crearTextareaFormulario(etiqueta, ruta, valor, filas = 3, atributo = 'data-form-field') {
+    return `
+        <div class="portal-config-field portal-diseno-encuesta__ancho">
+            <label for="campo-form-${ruta}">${escaparHtml(etiqueta)}</label>
+            <textarea id="campo-form-${ruta}" class="form-control" rows="${filas}" ${atributo}="${ruta}">${escaparHtml(valor || '')}</textarea>
+        </div>`;
+}
+
+/** Cada opción trae dos datos: el valor que se guarda y el texto que se muestra. */
 function crearCampoSeleccionFormulario(etiqueta, ruta, valor, opciones) {
     return `
         <div class="portal-config-field">
-            <label>${escaparHtml(etiqueta)}</label>
-            <select class="form-select" data-form-field="${ruta}">
+            <label for="campo-form-${ruta}">${escaparHtml(etiqueta)}</label>
+            <select id="campo-form-${ruta}" class="form-select" data-form-field="${ruta}">
                 ${opciones.map(function (opcion) {
                     return `<option value="${opcion[0]}" ${opcion[0] === valor ? 'selected' : ''}>${escaparHtml(opcion[1])}</option>`;
                 }).join('')}
             </select>
-        </div>
-    `;
-}
-
-/**
- * Genera el selector de color identificativo de un formulario.
- */
-function crearCampoColorFormulario(etiqueta, ruta, valor) {
-    return crearSelectorColorPortal(etiqueta, 'data-form-field', ruta, valor);
+        </div>`;
 }
 
 /**
@@ -883,15 +874,17 @@ function crearCampoColorFormulario(etiqueta, ruta, valor) {
  * También garantiza que secciones, preguntas y opciones sean arrays.
  */
 function normalizarFormularioPortal(formulario) {
-    const resultado = JSON.parse(JSON.stringify(formulario || crearFormularioVacioPortal()));
-
+    const resultado = formulario;
+    resultado.titulo = String(resultado.titulo || '');
     resultado.activo = convertirBooleano(resultado.activo, true);
     resultado.secciones = Array.isArray(resultado.secciones) ? resultado.secciones : [];
 
     resultado.secciones.forEach(function (seccion) {
+        seccion.titulo = String(seccion.titulo || '');
         seccion.preguntas = Array.isArray(seccion.preguntas) ? seccion.preguntas : [];
 
         seccion.preguntas.forEach(function (pregunta) {
+            pregunta.enunciado = String(pregunta.enunciado || '');
             pregunta.obligatorio = convertirBooleano(pregunta.obligatorio, false);
             pregunta.opciones = Array.isArray(pregunta.opciones) ? pregunta.opciones : [];
             pregunta.ancho = pregunta.ancho || 'completo';

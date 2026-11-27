@@ -5,6 +5,16 @@
 // ===========================================================
 const PROYECTO_ACCESO = 'pgom';
 
+// El aviso y la acción de renovar usan el mismo margen desde que caduca la sesión.
+const MARGEN_RENOVACION_SESION = 5 * 60;
+
+/** Devuelve 0 si se agotó el plazo o nunca se registró un vencimiento. */
+function segundosParaRenovarSesion()
+{
+    $vencimiento = (int)($_SESSION['expira_en'] ?? 0);
+    return max(0, $vencimiento + MARGEN_RENOVACION_SESION - time());
+}
+
 /** Devuelve E/L si existe un convenio válido para este usuario y proyecto. */
 function obtenerPermisoProyecto($conexion, $usuarioId)
 {
@@ -74,7 +84,7 @@ function validarSesionProyecto($comprobarExpiracion = true)
         return ['success' => false, 'status' => 'no_session', 'http' => 401,
             'message' => 'Debes iniciar sesión para acceder a la gestión.'];
     }
-    if ($comprobarExpiracion && time() > (int)($_SESSION['expira_en'] ?? 0)) {
+    if ($comprobarExpiracion && time() >= (int)($_SESSION['expira_en'] ?? 0)) {
         return ['success' => false, 'status' => 'expired', 'http' => 401,
             'message' => 'La sesión ha caducado.'];
     }

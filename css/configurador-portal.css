@@ -656,22 +656,6 @@ textarea {
     margin-bottom: 14px;
 }
 
-.portal-form-builder-section {
-    margin-bottom: 12px;
-    padding: 13px;
-    border: 1px solid #cae7da;
-    border-radius: 11px;
-    background: #fafdfc;
-}
-
-.portal-form-builder-question {
-    margin-top: 10px;
-    padding: 12px;
-    border: 1px solid #d9ece3;
-    border-radius: 9px;
-    background: #fff;
-}
-
 .portal-form-builder-empty {
     padding: 34px 20px;
     text-align: center;
@@ -829,37 +813,6 @@ textarea {
     justify-content: flex-end;
     gap: 12px;
     flex-wrap: wrap;
-}
-
-.portal-builder-preview-tabs {
-    display: inline-flex;
-    align-items: center;
-    gap: 3px;
-    padding: 3px;
-    background: #eef7f3;
-    border: 1px solid #dcece5;
-    border-radius: 9px;
-}
-
-.portal-builder-preview-tabs button {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    min-height: 31px;
-    padding: 0 10px;
-    color: #608675;
-    background: transparent;
-    border: 0;
-    border-radius: 7px;
-    font-size: 0.76rem;
-    font-weight: 500;
-}
-
-.portal-builder-preview-tabs button.is-active {
-    color: #003b17;
-    background: #ffffff;
-    box-shadow: 0 2px 7px rgba(28, 80, 57, 0.10);
 }
 
 /* Listados de recursos, documentos, noticias y preguntas. */
@@ -1055,13 +1008,6 @@ textarea {
 /* Vista previa realista del formulario                                      */
 /* -------------------------------------------------------------------------- */
 
-.portal-form-live-preview {
-    width: 100%;
-    height: 100%;
-    overflow: auto;
-    background: #eef6f2;
-}
-
 .portal-form-preview-page {
     min-height: 100%;
     color: #003b17;
@@ -1124,14 +1070,6 @@ textarea {
     line-height: 1.17;
 }
 
-.portal-form-preview-intro p {
-    max-width: 740px;
-    margin: 0;
-    color: #668979;
-    font-size: 0.87rem;
-    line-height: 1.55;
-}
-
 .portal-form-preview-pdf {
     display: grid;
     grid-template-columns: 42px minmax(0, 1fr) auto;
@@ -1175,8 +1113,7 @@ textarea {
     white-space: nowrap;
 }
 
-.portal-form-preview-pdf button,
-.portal-form-preview-only-pdf button {
+.portal-form-preview-pdf button:disabled {
     min-height: 34px;
     padding: 0 11px;
     color: var(--form-preview-color);
@@ -1298,10 +1235,21 @@ textarea {
     font-weight: 400;
 }
 
-.portal-form-preview-options.is-stacked {
-    align-items: flex-start;
-    flex-direction: column;
+.portal-form-preview-options.is-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 7px;
+}
+
+.portal-form-preview-options label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 8px;
+    background: #fff;
+    border: 1px solid #d9e0e8;
+    border-radius: 6px;
+    overflow-wrap: anywhere;
 }
 
 .portal-form-preview-actions {
@@ -1323,45 +1271,6 @@ textarea {
     font-size: 0.78rem;
     font-weight: 550;
     opacity: 0.78;
-}
-
-.portal-form-preview-only-pdf,
-.portal-form-preview-empty {
-    display: grid;
-    place-items: center;
-    min-height: 280px;
-    margin-top: 16px;
-    padding: 32px;
-    text-align: center;
-    background: #ffffff;
-    border: 1px dashed #cfe3da;
-    border-radius: 14px;
-}
-
-.portal-form-preview-only-pdf > i,
-.portal-form-preview-empty > i {
-    color: var(--form-preview-color, #003b17);
-    font-size: 2rem;
-}
-
-.portal-form-preview-only-pdf h2,
-.portal-form-preview-empty strong {
-    margin: 10px 0 5px;
-    color: #335847;
-    font-size: 1rem;
-    font-weight: 600;
-}
-
-.portal-form-preview-only-pdf p,
-.portal-form-preview-empty p {
-    margin: 0 0 13px;
-    color: #7b968a;
-    font-size: 0.78rem;
-}
-
-.portal-form-preview-empty.is-inline {
-    min-height: 150px;
-    grid-column: 1 / -1;
 }
 
 .portal-form-preview-section-empty {
@@ -1600,13 +1509,6 @@ textarea {
     transform-origin: top left;
     box-shadow: none;
     transition: none;
-}
-
-.portal-form-live-preview {
-    flex: 1;
-    min-width: 0;
-    min-height: 0;
-    border-radius: 7px;
 }
 
 .portal-access-editor-actions {
@@ -1918,8 +1820,6 @@ body.portal-builder-page {
     cursor: pointer;
 }
 
-.portal-form-builder-section,
-.portal-form-builder-question,
 .portal-form-preview-section,
 .portal-form-preview-question {
     margin-inline-start: calc(var(--nivel-encuesta, 0) * 0.65rem);
@@ -1933,103 +1833,812 @@ body.portal-builder-page {
     padding-inline: 0.35rem;
 }
 
-/* El guardado sigue a mano después de navegar a una pregunta. */
-.portal-form-builder-toolbar--guardar {
+/* Diseñador de encuestas. La barra, la paleta y el papel se dibujan en
+   configuradorVistaFormulario.js. Estos estilos solo actúan al abrirlo. */
+.portal-builder-layout:has(.portal-diseno-encuesta) {
+    grid-template-columns: minmax(0, 1fr);
+}
+
+.portal-builder-layout:has(.portal-diseno-encuesta) > .portal-builder-sidebar,
+.portal-builder-layout:has(.portal-diseno-encuesta) > .portal-builder-preview,
+.portal-builder-properties:has(.portal-diseno-encuesta) > .portal-builder-properties__heading,
+.portal-builder-page:has(.portal-diseno-encuesta) .portal-builder-header__actions,
+.portal-builder-page:has(.portal-diseno-encuesta) .portal-builder-header__left p {
+    display: none;
+}
+
+.portal-builder-properties__body:has(.portal-diseno-encuesta) {
+    padding: 0;
+    scroll-padding-top: 118px;
+    background: var(--pgom-fondo);
+}
+
+.portal-diseno-encuesta {
+    --editor-encuesta-tinta: var(--pgom-editor-primary);
+    --editor-encuesta-fondo: var(--pgom-fondo);
+    --editor-encuesta-borde: var(--pgom-borde);
+    min-height: 100%;
+}
+
+.portal-diseno-encuesta__barra {
     position: sticky;
     top: 0;
-    z-index: 2;
-    padding-block: 8px;
+    z-index: 5;
+    border-bottom: 1px solid var(--editor-encuesta-borde);
     background: #fff;
 }
 
-/* Edición de textos en la vista previa y campo vinculado del lateral. */
-.portal-form-campo-vinculado {
-    outline: 2px solid var(--pgom-editor-primary);
-    outline-offset: 4px;
-    border-radius: 5px;
+.portal-diseno-encuesta__fila {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 9px clamp(12px, 3vw, 30px);
 }
 
-.portal-form-edicion__boton {
-    display: inline;
-    max-width: 100%;
-    padding: 0;
-    border: 0;
-    border-radius: 4px;
-    color: inherit;
-    background: transparent;
+.portal-diseno-encuesta__estructura {
+    padding-block: 7px;
+    border-top: 1px solid var(--editor-encuesta-borde);
+    background: var(--editor-encuesta-fondo);
+}
+
+.portal-diseno-encuesta__indice {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-inline-end: auto;
+    color: #526074;
+    font-size: .82rem;
+}
+
+.portal-diseno-encuesta__indice select {
+    width: min(30vw, 300px);
+    min-width: 120px;
+}
+
+.portal-diseno-encuesta__acciones,
+.portal-diseno-encuesta__acciones-bloque {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+}
+
+.portal-diseno-encuesta__ajustes {
+    max-width: 980px;
+    margin: 14px auto 0;
+    padding-inline: 14px;
+}
+
+.portal-diseno-encuesta__ajustes .portal-config-card {
+    margin: 0;
+}
+
+.portal-diseno-encuesta__ancho {
+    grid-column: 1 / -1;
+}
+
+.portal-diseno-encuesta__publicacion {
+    align-self: center;
+}
+
+.portal-diseno-encuesta__espacio {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    align-items: start;
+    gap: 22px;
+    width: min(100%, 950px);
+    margin: 0 auto;
+    padding: 18px clamp(10px, 3vw, 28px) 28px;
+}
+
+.portal-paleta-encuesta {
+    position: sticky;
+    top: 60px;
+    max-height: calc(100dvh - 190px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 13px;
+    border: 1px solid var(--editor-encuesta-borde);
+    border-radius: 13px;
+    background: #fff;
+}
+
+.portal-diseno-encuesta:has(#navegacionApartadosFormulario:not([hidden])) .portal-paleta-encuesta {
+    top: 108px;
+}
+
+.portal-paleta-encuesta h2 {
+    margin: 0;
+    color: var(--editor-encuesta-tinta);
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.portal-paleta-encuesta p {
+    margin: 6px 0 12px;
+    color: #526074;
+    font-size: .8rem;
+    overflow-wrap: anywhere;
+}
+
+.portal-paleta-encuesta__preguntas {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--editor-encuesta-borde);
+}
+
+.portal-paleta-encuesta__destino {
+    margin-bottom: 8px;
+    color: #526074;
+    font-size: .8rem;
+    overflow-wrap: anywhere;
+}
+
+.portal-paleta-encuesta__mas {
+    margin-top: 8px;
+}
+
+.portal-paleta-encuesta__mas > summary {
+    padding-block: 6px;
+    color: var(--editor-encuesta-tinta);
+    font-size: .8rem;
+    cursor: pointer;
+}
+
+.portal-paleta-encuesta__tipos {
+    display: grid;
+    gap: 5px;
+}
+
+.portal-paleta-encuesta__elemento {
+    display: grid;
+    grid-template-columns: 19px minmax(0, 1fr) 15px;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+    padding: 7px 8px;
+    border: 1px solid var(--editor-encuesta-borde);
+    border-radius: 7px;
+    background: white;
+    color: var(--editor-encuesta-tinta);
     text-align: start;
+    font-size: .82rem;
+    cursor: grab;
+}
+
+.portal-paleta-encuesta__elemento:hover,
+.portal-paleta-encuesta__elemento.es-apartado {
+    background: var(--editor-encuesta-fondo);
+}
+
+.portal-diseno-encuesta__lienzo {
+    min-width: 0;
+    border: 1px solid var(--editor-encuesta-borde);
+    border-radius: 14px;
+    overflow: hidden;
+    background: #fff;
+    box-shadow: 0 8px 26px rgba(38, 54, 74, .055);
+}
+
+.portal-diseno-encuesta__lienzo.en-prueba {
+    width: min(100%, 940px);
+    margin-inline: auto;
+}
+
+.portal-diseno-encuesta__lienzo .portal-form-preview-header {
+    min-height: 70px;
+}
+
+.portal-form-preview-intro.sin-icono {
+    grid-template-columns: minmax(0, 1fr);
+}
+
+.portal-diseno-encuesta__descripcion {
+    color: #526074;
+    font-size: .88rem;
+}
+
+.en-prueba .portal-diseno-encuesta__descripcion,
+.portal-diseno-encuesta__vista-papel .portal-diseno-encuesta__descripcion {
+    white-space: pre-wrap;
+}
+
+/* La tarjeta del formulario nuevo reutiliza la presentación pública.
+   Los campos conservan su borde y foco visibles al pasar el puntero o editar. */
+.portal-diseno-encuesta__inicio .portal-diseno-encuesta__campo:not(:hover):not(:focus) {
+    background: transparent;
+    border-color: transparent;
+}
+
+.portal-diseno-encuesta__soltar.es-inicio {
+    justify-content: center;
+    min-height: 42px;
+    margin-bottom: 8px;
+    padding: 7px 10px;
+    color: #526074;
+    text-align: center;
+    border: 1px dashed var(--editor-encuesta-borde);
+}
+
+/* En edición se reconocen las cajas por su borde. Los controles que verá
+   la ciudadanía aparecen solo al probar la encuesta. */
+.portal-diseno-encuesta__titulo {
+    gap: 8px;
+    padding: 16px;
+}
+
+.portal-diseno-encuesta__titulo > label {
+    font-size: .85rem;
+    font-weight: 650;
+}
+
+.portal-diseno-encuesta__titulo [data-form-field="titulo"] {
+    font-size: 1.25rem;
+    font-weight: 650;
+}
+
+details.portal-diseno-encuesta__descripcion summary {
+    width: fit-content;
+    margin-block: 4px;
+    color: var(--editor-encuesta-tinta);
+    cursor: pointer;
+}
+
+.portal-diseno-encuesta__campo {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    padding: 7px 9px;
+    border: 1px solid #d1dae5;
+    border-radius: 6px;
+    color: inherit;
+    background: #fff;
     font: inherit;
     overflow-wrap: anywhere;
 }
 
-.portal-form-edicion__boton .bi {
-    margin-inline-start: 3px;
-    color: var(--form-preview-color);
-    font-size: .8em;
-}
-
-.portal-form-edicion__boton:hover,
-.portal-form-edicion__boton:focus-visible {
-    color: var(--form-preview-color);
-    text-decoration: underline;
-}
-
-.portal-form-edicion [hidden] {
-    display: none;
-}
-
-.portal-form-preview-question > .portal-form-edicion {
-    align-self: start;
-    max-width: 100%;
-    margin-top: 8px;
-    color: var(--form-preview-color);
-}
-
-.portal-form-preview-question > .portal-form-edicion:has([data-editor-vista]) {
-    align-self: stretch;
-}
-
-.portal-form-edicion__editor {
-    display: block;
-    margin-block: 3px 6px;
-    font-size: .85rem;
-    font-weight: 400;
-}
-
-.portal-form-edicion__editor [data-valor-vista] {
-    display: block;
-    width: 100%;
-    margin: 0;
-    padding: 7px 9px;
-    border: 1px solid var(--form-preview-color);
-    border-radius: 6px;
-    color: #27364d;
-    background: #fff;
-    font: inherit;
+textarea.portal-diseno-encuesta__campo {
+    min-height: 2em;
+    field-sizing: content;
     resize: vertical;
 }
 
-.portal-form-edicion__acciones {
+.portal-diseno-encuesta__campo::placeholder {
+    color: #57667b;
+    opacity: 1;
+}
+
+.portal-diseno-encuesta__campo:hover,
+.portal-diseno-encuesta__campo:focus-visible {
+    border-color: var(--form-preview-color);
+    background: #fff;
+}
+
+.portal-diseno-encuesta__campo:focus-visible {
+    outline: 2px solid var(--form-preview-color);
+    outline-offset: 1px;
+}
+
+.portal-diseno-encuesta__apartados {
+    margin-top: 15px;
+}
+
+.portal-diseno-encuesta__apartado,
+.portal-diseno-encuesta__pregunta {
+    margin-inline-start: calc(var(--nivel-encuesta, 0) * .85rem);
+    scroll-margin-top: 12px;
+}
+
+.portal-diseno-encuesta__apartado.is-destino {
+    border-color: color-mix(in srgb, var(--editor-encuesta-tinta) 38%, white);
+}
+
+.portal-diseno-encuesta__apartado {
+    margin-bottom: 6px;
+    padding: 16px;
+}
+
+.portal-diseno-encuesta__apartados > [hidden],
+.portal-diseno-encuesta__preguntas[hidden] {
+    display: none;
+}
+
+/* Plegado, el título se lee como parte del índice y se puede editar al enfocarlo. */
+.portal-diseno-encuesta__apartado.is-plegado .portal-diseno-encuesta__campo:not(:hover):not(:focus) {
+    border-color: transparent;
+    background: transparent;
+}
+
+.portal-diseno-encuesta__encabezado {
+    position: relative;
+    display: grid;
+    grid-template-columns: 32px minmax(0, 1fr) 32px 65px;
+    align-items: start;
+    gap: 9px;
+}
+
+/* El plegado tiene su propio control. El asa queda en el margen izquierdo
+   para que plegar y mover sigan siendo acciones fáciles de distinguir. */
+.portal-diseno-encuesta__encabezado--apartado {
+    grid-template-columns: 32px minmax(0, 1fr) 91px 65px;
+}
+
+.portal-diseno-encuesta__plegar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    height: 32px;
+    padding: 0 6px;
+    color: #526074;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    font-size: .8rem;
+}
+
+.portal-diseno-encuesta__plegar:hover,
+.portal-diseno-encuesta__plegar:focus-visible {
+    color: var(--editor-encuesta-tinta);
+    background: var(--editor-encuesta-fondo);
+}
+
+.portal-diseno-encuesta__plegar[aria-expanded="false"] i {
+    transform: rotate(180deg);
+}
+
+.portal-diseno-encuesta__texto h2,
+.portal-diseno-encuesta__texto h3 {
+    margin: 2px 0;
+    color: #26364d;
+    font-weight: 650;
+}
+
+.portal-diseno-encuesta__texto h2 { font-size: 1.15rem; }
+.portal-diseno-encuesta__texto h3 { font-size: 1rem; }
+
+.portal-diseno-encuesta__tipo,
+.portal-diseno-encuesta__ayuda {
+    color: #526074;
+    font-size: .79rem;
+}
+
+.portal-diseno-encuesta__tipo,
+.portal-diseno-encuesta__ayuda {
+    margin-inline-start: 6px;
+}
+
+.portal-diseno-encuesta__menu > summary {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border: 1px solid var(--editor-encuesta-borde);
+    border-radius: 7px;
+    background: white;
+    color: var(--editor-encuesta-tinta);
+    list-style: none;
+}
+
+/* El icono sigue visible. El fondo solo resalta al usar el asa. */
+.portal-diseno-encuesta__asa {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    color: #65748a;
+    background: transparent;
+    border: 0;
+    border-radius: 6px;
+    font-size: 1rem;
+    cursor: grab;
+}
+
+.portal-diseno-encuesta__asa:hover,
+.portal-diseno-encuesta__asa:focus-visible,
+.portal-diseno-encuesta__asa:active {
+    color: var(--editor-encuesta-tinta);
+    background: var(--editor-encuesta-fondo);
+}
+
+.portal-diseno-encuesta__asa:active { cursor: grabbing; }
+
+.portal-diseno-encuesta__menu > summary {
     display: flex;
+    gap: 5px;
+    align-items: center;
+    width: auto;
+    padding-inline: 8px;
+    font-size: .8rem;
+    cursor: pointer;
+}
+.portal-diseno-encuesta__menu > summary::-webkit-details-marker { display: none; }
+
+.portal-diseno-encuesta__menu[open] {
+    grid-column: 1 / -1;
+}
+
+.portal-diseno-encuesta__menu[open] > summary {
+    position: absolute;
+    inset-inline-end: 0;
+    top: 0;
+}
+
+.portal-diseno-encuesta__menu-contenido {
+    display: grid;
+    gap: 10px;
+    padding: 11px;
+    border: 1px solid var(--editor-encuesta-borde);
+    border-radius: 8px;
+    background: #fff;
+    font-size: .83rem;
+}
+
+.portal-diseno-encuesta__menu-contenido > .btn {
+    justify-self: start;
+}
+
+.portal-diseno-encuesta__preguntas {
+    margin-top: 10px;
+    border-top: 1px solid var(--editor-encuesta-borde);
+}
+
+.portal-diseno-encuesta__pregunta {
+    margin-bottom: 4px;
+    padding: 10px;
+    border: 1px solid #e1e6ed;
+    border-radius: 9px;
+    background: #fafbfd;
+}
+
+.portal-diseno-encuesta__pregunta:focus-within {
+    border-color: var(--editor-encuesta-tinta);
+}
+
+/* Al plegar una pregunta dejamos su enunciado y las acciones para moverla
+   o abrirla. Los campos siguen en la página y mantienen su valor. */
+.portal-diseno-encuesta__pregunta.is-plegada .portal-diseno-encuesta__enunciado,
+.portal-diseno-encuesta__pregunta.is-plegada .portal-diseno-encuesta__respuesta,
+.portal-diseno-encuesta__pregunta:not(.is-plegada) .portal-diseno-encuesta__resumen-pregunta {
+    display: none;
+}
+
+.portal-diseno-encuesta__resumen-pregunta {
+    padding-inline-start: 6px;
+    overflow-wrap: anywhere;
+}
+
+.portal-diseno-encuesta__respuesta {
+    display: grid;
+    grid-template-columns: minmax(0, 255px) minmax(0, 1fr);
+    align-items: end;
+    gap: 8px 14px;
+    margin-top: 8px;
+}
+
+.portal-diseno-encuesta__respuesta .form-check {
+    padding-bottom: 8px;
+    font-size: .86rem;
+}
+
+.portal-diseno-encuesta__vacio {
+    margin: 7px 0;
+    padding: 11px 14px;
+    border: 1px dashed var(--editor-encuesta-borde);
+    border-radius: 8px;
+    color: #526074;
+    font-size: .85rem;
+}
+
+/* La guía cambia de color al arrastrar. La altura es estable para que el
+   lugar señalado no se desplace al comenzar el arrastre. */
+.portal-diseno-encuesta__soltar {
+    display: flex;
+    align-items: center;
+    min-height: 12px;
+    margin-inline-start: calc(var(--nivel-encuesta, 0) * .85rem);
+    border-radius: 6px;
+    color: var(--editor-encuesta-tinta);
+    font-size: .8rem;
+}
+
+.portal-diseno-encuesta__soltar.es-final {
     flex-wrap: wrap;
     justify-content: space-between;
-    gap: 4px 10px;
-    align-items: center;
-    margin-block-start: 5px;
-}
-
-.portal-form-edicion__acciones button {
-    margin-inline-start: auto;
-    padding: 3px 9px;
-    border: 1px solid var(--form-preview-color);
-    border-radius: 5px;
-    color: var(--form-preview-color);
+    gap: 8px;
+    min-height: 48px;
+    padding: 7px 10px;
+    border: 1px dashed var(--editor-encuesta-borde);
     background: #fff;
-    font: inherit;
 }
 
-/* Las ayudas vacías se pueden añadir desde el lateral. */
-.portal-form-preview-question > small:has([data-texto-vista][hidden]),
-.portal-form-preview-section legend small:has([data-texto-vista][hidden]) {
+.portal-diseno-encuesta__soltar.es-final > span {
+    color: #526074;
+}
+
+.portal-diseno-encuesta__apartado,
+.portal-diseno-encuesta__pregunta {
+    position: relative;
+}
+
+/* La guía para anidar se muestra sobre el margen del bloque. Las demás
+   tarjetas conservan su posición mientras esa guía está visible. */
+.portal-diseno-encuesta__soltar.es-hijo {
     display: none;
+    position: absolute;
+    z-index: 2;
+    inset-inline-end: 10px;
+    inset-block-end: 5px;
+    padding: 4px 8px;
+    box-shadow: 0 0 0 1px var(--editor-encuesta-tinta);
+}
+
+.arrastrando-encuesta .portal-diseno-encuesta__soltar.acepta-bloque {
+    background: color-mix(in srgb, var(--editor-encuesta-tinta) 8%, white);
+}
+
+.arrastrando-encuesta .portal-diseno-encuesta__soltar.es-hijo.acepta-bloque {
+    display: flex;
+}
+
+.arrastrando-encuesta .portal-diseno-encuesta__soltar.destino-arrastre {
+    background: color-mix(in srgb, var(--editor-encuesta-tinta) 22%, white);
+    box-shadow: inset 0 0 0 2px var(--editor-encuesta-tinta);
+}
+
+/* La guía normal está dentro del apartado. Si está plegado, indicamos el
+   mismo destino en la tarjeta para que se pueda soltar directamente ahí. */
+.portal-diseno-encuesta__destino-plegado {
+    display: none;
+    position: absolute;
+    inset-inline-end: 12px;
+    inset-block-end: 6px;
+    z-index: 2;
+    padding: 3px 8px;
+    border-radius: 5px;
+    color: var(--editor-encuesta-tinta);
+    background: var(--editor-encuesta-fondo);
+    font-size: .75rem;
+    pointer-events: none;
+}
+
+.arrastrando-encuesta .portal-diseno-encuesta__apartado.is-plegado:has(> [data-contenido-apartado] > .es-final.destino-arrastre) {
+    box-shadow: inset 0 0 0 2px var(--editor-encuesta-tinta);
+}
+
+.arrastrando-encuesta .portal-diseno-encuesta__apartado.is-plegado:has(> [data-contenido-apartado] > .es-final.destino-arrastre)
+    > .portal-diseno-encuesta__destino-plegado {
+    display: block;
+}
+
+@media (max-width: 849px) {
+    .portal-paleta-encuesta {
+        position: static;
+        max-height: none;
+        overflow-y: visible;
+    }
+
+    .portal-paleta-encuesta__tipos {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 760px) {
+    .portal-builder-layout:has(.portal-diseno-encuesta),
+    .portal-builder-properties:has(.portal-diseno-encuesta),
+    .portal-builder-properties__body:has(.portal-diseno-encuesta) {
+        overflow: visible;
+    }
+
+    .portal-builder-page:has(.portal-diseno-encuesta) {
+        scroll-padding-top: 160px;
+    }
+}
+
+@media (max-width: 540px) {
+    .portal-diseno-encuesta__encabezado {
+        grid-template-columns: 28px minmax(0, 1fr) 30px 59px;
+        gap: 5px;
+    }
+
+    .portal-diseno-encuesta__plegar span {
+        display: none;
+    }
+}
+
+@media (max-width: 420px) {
+    .portal-diseno-encuesta__indice {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .portal-diseno-encuesta__indice select {
+        width: auto;
+        min-width: 0;
+        flex: 1;
+    }
+
+    .portal-diseno-encuesta__respuesta {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+/* Vista en directo. En pantallas anchas permanece junto al editor.
+   El espacio ocupa todo el ancho del panel. En móvil la vista pasa debajo. */
+.portal-diseno-encuesta__espacio:has(.portal-diseno-encuesta__vista) {
+    width: 100%;
+    padding-inline: clamp(10px, 1.25vw, 24px);
+    grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+    gap: 16px;
+}
+
+.portal-diseno-encuesta__espacio:has(.portal-paleta-encuesta) {
+    grid-template-columns: minmax(165px, 210px) minmax(0, 1.3fr) minmax(0, 1fr);
+}
+
+/* El papel editable crece con su columna, también en monitores grandes. */
+.portal-diseno-encuesta__lienzo:not(.en-prueba) .portal-form-preview-content {
+    width: calc(100% - clamp(20px, 3vw, 36px));
+}
+
+.portal-diseno-encuesta__vista {
+    --vista-encuesta-superior: 60px;
+    position: sticky;
+    top: var(--vista-encuesta-superior);
+    min-width: 0;
+    border: 1px solid var(--editor-encuesta-borde);
+    border-radius: 14px;
+    overflow: hidden;
+    background: #fff;
+}
+
+.portal-diseno-encuesta:has(#navegacionApartadosFormulario:not([hidden])) .portal-diseno-encuesta__vista {
+    --vista-encuesta-superior: 108px;
+}
+
+.portal-diseno-encuesta__vista-barra {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 10px 13px;
+    border-bottom: 1px solid var(--editor-encuesta-borde);
+}
+
+.portal-diseno-encuesta__vista-barra h2 {
+    margin: 0;
+    color: var(--editor-encuesta-tinta);
+    font-size: .95rem;
+    font-weight: 700;
+}
+
+.portal-diseno-encuesta__vista-papel {
+    max-height: max(220px, calc(100dvh - var(--vista-encuesta-superior) - 142px));
+    overflow: auto;
+    overscroll-behavior: contain;
+}
+
+.portal-diseno-encuesta__vista-papel:focus-visible {
+    outline: 2px solid var(--editor-encuesta-tinta);
+    outline-offset: -2px;
+}
+
+/* El papel lateral conserva la jerarquía y adapta el espaciado a su columna. */
+.portal-diseno-encuesta__vista-papel .portal-form-preview-header {
+    --encuesta-ancho-diputacion: 120px;
+    padding: 8px 12px;
+}
+
+.portal-diseno-encuesta__vista-papel .portal-form-preview-content {
+    width: calc(100% - 24px);
+    padding: 14px 0 20px;
+}
+
+.portal-diseno-encuesta__vista-papel .portal-form-preview-intro {
+    grid-template-columns: 40px minmax(0, 1fr);
+    gap: 10px;
+    padding: 12px;
+}
+
+.portal-diseno-encuesta__vista-papel .portal-form-preview-intro.sin-icono {
+    grid-template-columns: minmax(0, 1fr);
+}
+
+.portal-diseno-encuesta__vista-papel .portal-form-preview-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 9px;
+    font-size: 1rem;
+}
+
+.portal-diseno-encuesta__vista-papel .portal-form-preview-intro h1 {
+    font-size: 1.18rem;
+}
+
+.portal-diseno-encuesta__vista-papel .portal-form-preview-intro,
+.portal-diseno-encuesta__vista-papel .portal-form-preview-section {
+    overflow-wrap: anywhere;
+}
+
+.portal-diseno-encuesta__vista-papel .portal-form-preview-section {
+    min-width: 0;
+    padding: 13px;
+}
+
+.portal-diseno-encuesta__vista-papel .portal-form-preview-section legend {
+    gap: 8px;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+}
+
+.portal-diseno-encuesta__vista-papel .portal-form-preview-options {
+    flex-wrap: wrap;
+    gap: 7px;
+}
+
+.portal-diseno-encuesta__vista-papel .portal-form-preview-pdf {
+    grid-template-columns: 32px minmax(0, 1fr);
+}
+
+.portal-diseno-encuesta__vista-papel .portal-form-preview-pdf button {
+    grid-column: 1 / -1;
+    justify-self: start;
+}
+
+.portal-diseno-encuesta__salto-vista {
+    display: none;
+}
+
+@media (min-width: 900px) and (max-width: 1139px) {
+    .portal-diseno-encuesta__espacio:has(.portal-paleta-encuesta) {
+        grid-template-columns: minmax(0, 1.12fr) minmax(0, 1fr);
+    }
+
+    .portal-paleta-encuesta {
+        position: static;
+        grid-column: 1 / -1;
+        display: grid;
+        grid-template-columns: minmax(145px, 1fr) minmax(0, 3fr);
+        gap: 0 16px;
+        max-height: none;
+    }
+
+    .portal-paleta-encuesta > :not(.portal-paleta-encuesta__preguntas) {
+        grid-column: 1;
+    }
+
+    .portal-paleta-encuesta__preguntas {
+        grid-column: 2;
+        grid-row: 1 / span 3;
+        margin-top: 0;
+        padding-top: 0;
+        border-top: 0;
+    }
+
+    .portal-paleta-encuesta__tipos {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 899px) {
+    .portal-diseno-encuesta__espacio:has(.portal-diseno-encuesta__vista),
+    .portal-diseno-encuesta__espacio:has(.portal-paleta-encuesta) {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .portal-paleta-encuesta,
+    .portal-diseno-encuesta__vista {
+        position: static;
+    }
+
+    .portal-diseno-encuesta__vista-papel {
+        max-height: none;
+        overflow: visible;
+    }
+
+    .portal-diseno-encuesta__salto-vista {
+        display: inline-flex;
+        align-items: center;
+    }
 }
